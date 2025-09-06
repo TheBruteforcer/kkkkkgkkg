@@ -1,0 +1,833 @@
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة مستر محمد السيد التعليمية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)", 
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    arabic: ["Noto Sans Arabic", "sans-serif"],
+                    sans: ["Inter", "sans-serif"],
+                }
+            },
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222 84% 4.9%);
+            --primary: hsl(196 94% 67%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(210 40% 96%);
+            --secondary-foreground: hsl(222 84% 4.9%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215 16% 46.9%);
+            --accent: hsl(45 93% 47%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214 32% 91%);
+            --input: hsl(214 32% 91%);
+            --ring: hsl(196 94% 67%);
+            --radius: 0.5rem;
+        }
+        
+        * {
+            font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, hsl(196 94% 67%) 0%, hsl(45 93% 47%) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <!-- @COMPONENT: LandingPage -->
+    <div id="landing-page" class="min-h-screen">
+        <!-- Navigation -->
+        <!-- @COMPONENT: Navigation -->
+        <nav class="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <div class="bg-primary p-2 rounded-lg">
+                            <i class="fas fa-graduation-cap text-primary-foreground text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-foreground">مستر محمد السيد</h1>
+                            <p class="text-sm text-muted-foreground">منصة التعليم الرقمية</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <button id="login-btn" class="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                            تسجيل الدخول
+                        </button>
+                        <button id="register-btn" class="border border-border text-foreground px-4 py-2 rounded-lg hover:bg-muted transition-colors font-medium">
+                            إنشاء حساب
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- @END_COMPONENT: Navigation -->
+
+        <!-- Hero Section -->
+        <!-- @COMPONENT: HeroSection -->
+        <section class="gradient-bg py-20 lg:py-32">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="text-center lg:text-right animate-fade-in">
+                        <h1 class="text-4xl lg:text-6xl font-bold text-primary-foreground mb-6">
+                            مرحباً بك في منصة
+                            <span class="block text-accent">مستر محمد السيد</span>
+                        </h1>
+                        <p class="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
+                            منصة تعليمية متطورة توفر لك أفضل تجربة تعلم تفاعلية مع محتوى عالي الجودة ومتابعة مستمرة لتقدمك الأكاديمي
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                            <button class="bg-accent text-accent-foreground px-8 py-4 rounded-xl font-bold text-lg hover:bg-accent/90 transition-all transform hover:scale-105 shadow-lg">
+                                ابدأ رحلتك التعليمية
+                            </button>
+                            <button class="bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/30 px-8 py-4 rounded-xl font-medium text-lg hover:bg-primary-foreground/30 transition-colors">
+                                تعرف على المزيد
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-center lg:justify-start animate-float">
+                        <!-- Modern educational illustration with students using technology -->
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=600" alt="Students collaborating on educational technology" class="rounded-2xl shadow-2xl w-full max-w-md lg:max-w-lg"/>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: HeroSection -->
+
+        <!-- Features Section -->
+        <!-- @COMPONENT: FeaturesSection -->
+        <section class="py-20 bg-muted/30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16 animate-slide-up">
+                    <h2 class="text-3xl lg:text-4xl font-bold text-foreground mb-6">ميزات المنصة</h2>
+                    <p class="text-xl text-muted-foreground max-w-3xl mx-auto">تجربة تعليمية شاملة مصممة خصيصاً لتلبية احتياجات الطلاب العرب</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up">
+                        <div class="bg-primary/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-chalkboard-teacher text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-foreground mb-4">شرح تفاعلي</h3>
+                        <p class="text-muted-foreground leading-relaxed">صور واضحة للسبورة مع فيديوهات شرح مفصلة لحل الواجبات والتمارين</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up" style="animation-delay: 0.1s;">
+                        <div class="bg-accent/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-quiz text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-foreground mb-4">اختبارات ذكية</h3>
+                        <p class="text-muted-foreground leading-relaxed">نظام اختبارات متطور مع تصحيح فوري وتقييم شامل للأداء</p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up" style="animation-delay: 0.2s;">
+                        <div class="bg-green-500/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-chart-line text-green-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-foreground mb-4">متابعة التقدم</h3>
+                        <p class="text-muted-foreground leading-relaxed">تقارير مفصلة عن الأداء مع رسوم بيانية لمتابعة التحسن</p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up" style="animation-delay: 0.3s;">
+                        <div class="bg-purple-500/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-mobile-alt text-purple-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-foreground mb-4">متوافق مع الجوال</h3>
+                        <p class="text-muted-foreground leading-relaxed">تصميم متجاوب يعمل بكفاءة على جميع الأجهزة والشاشات</p>
+                    </div>
+
+                    <!-- Feature 5 -->
+                    <div class="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up" style="animation-delay: 0.4s;">
+                        <div class="bg-red-500/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-shield-alt text-red-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-foreground mb-4">أمان عالي</h3>
+                        <p class="text-muted-foreground leading-relaxed">حماية متقدمة للبيانات مع نظام مصادقة آمن لضمان الخصوصية</p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up" style="animation-delay: 0.5s;">
+                        <div class="bg-blue-500/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-search text-blue-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-foreground mb-4">بحث ذكي</h3>
+                        <p class="text-muted-foreground leading-relaxed">محرك بحث متطور للعثور على المحتوى التعليمي بسهولة وسرعة</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: FeaturesSection -->
+    </div>
+    <!-- @END_COMPONENT: LandingPage -->
+
+    <!-- Registration Modal -->
+    <!-- @COMPONENT: RegistrationModal -->
+    <div id="registration-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-card rounded-2xl shadow-2xl w-full max-w-md animate-slide-up">
+            <div class="p-6 border-b border-border">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-foreground">إنشاء حساب جديد</h2>
+                    <button id="close-register" class="text-muted-foreground hover:text-foreground transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">الاسم الكامل</label>
+                        <input type="text" data-mock="true" placeholder="أدخل اسمك الكامل" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">البريد الإلكتروني</label>
+                        <input type="email" data-mock="true" placeholder="example@email.com" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">كلمة المرور</label>
+                        <input type="password" data-mock="true" placeholder="أدخل كلمة مرور قوية" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">المرحلة الدراسية</label>
+                        <select data-mock="true" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                            <option value="">اختر المرحلة الدراسية</option>
+                            <option value="grade-1">الصف الأول الثانوي</option>
+                            <option value="grade-2">الصف الثاني الثانوي</option>
+                            <option value="grade-3">الصف الثالث الثانوي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">المجموعة</label>
+                        <select data-mock="true" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                            <option value="">اختر المجموعة</option>
+                            <option value="group-a">المجموعة أ</option>
+                            <option value="group-b">المجموعة ب</option>
+                            <option value="group-c">المجموعة ج</option>
+                        </select>
+                    </div>
+                    <button type="submit" data-implementation="Should validate form and create account" class="w-full bg-primary text-primary-foreground py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors">
+                        إنشاء الحساب
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: RegistrationModal -->
+
+    <!-- Login Modal -->
+    <!-- @COMPONENT: LoginModal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-card rounded-2xl shadow-2xl w-full max-w-md animate-slide-up">
+            <div class="p-6 border-b border-border">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-foreground">تسجيل الدخول</h2>
+                    <button id="close-login" class="text-muted-foreground hover:text-foreground transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">البريد الإلكتروني</label>
+                        <input type="email" data-mock="true" placeholder="example@email.com" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">كلمة المرور</label>
+                        <input type="password" data-mock="true" placeholder="أدخل كلمة المرور" class="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center space-x-reverse space-x-2">
+                            <input type="checkbox" class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-ring">
+                            <span class="text-sm text-muted-foreground">تذكرني</span>
+                        </label>
+                        <a href="#" class="text-sm text-primary hover:text-primary/80">نسيت كلمة المرور؟</a>
+                    </div>
+                    <button type="submit" data-implementation="Should authenticate user and redirect to dashboard" class="w-full bg-primary text-primary-foreground py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors">
+                        تسجيل الدخول
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: LoginModal -->
+
+    <!-- Student Dashboard -->
+    <!-- @COMPONENT: StudentDashboard -->
+    <div id="student-dashboard" class="min-h-screen bg-muted/20 hidden">
+        <!-- Dashboard Navigation -->
+        <nav class="bg-card shadow-lg border-b border-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <div class="bg-primary p-2 rounded-lg">
+                            <i class="fas fa-graduation-cap text-primary-foreground"></i>
+                        </div>
+                        <div>
+                            <span class="text-sm text-muted-foreground">مرحباً،</span>
+                            <span class="text-lg font-bold text-foreground" data-bind="user.name">أحمد محمد</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <div class="text-sm text-muted-foreground">
+                            <span data-bind="user.grade">الصف الثاني الثانوي</span> - 
+                            <span data-bind="user.group">المجموعة أ</span>
+                        </div>
+                        <button id="logout-btn" class="text-muted-foreground hover:text-foreground transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Search Bar -->
+            <div class="mb-8">
+                <div class="relative max-w-md">
+                    <input type="text" placeholder="ابحث في المواد التعليمية..." class="w-full pl-10 pr-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">إجمالي المواد</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="stats.totalMaterials">24</p>
+                        </div>
+                        <div class="bg-blue-500/10 p-3 rounded-lg">
+                            <i class="fas fa-book text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">الاختبارات المكتملة</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="stats.completedQuizzes">8</p>
+                        </div>
+                        <div class="bg-green-500/10 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">متوسط الدرجات</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="stats.averageScore">85%</p>
+                        </div>
+                        <div class="bg-accent/10 p-3 rounded-lg">
+                            <i class="fas fa-chart-line text-accent text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Tabs -->
+            <div class="bg-card rounded-xl shadow-sm border border-border">
+                <div class="border-b border-border">
+                    <nav class="flex space-x-reverse space-x-8 px-6">
+                        <button class="tab-btn active py-4 px-2 border-b-2 border-primary text-primary font-medium" data-tab="whiteboard">
+                            صور السبورة
+                        </button>
+                        <button class="tab-btn py-4 px-2 border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors" data-tab="videos">
+                            فيديوهات الحل
+                        </button>
+                        <button class="tab-btn py-4 px-2 border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors" data-tab="quizzes">
+                            الاختبارات
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Whiteboard Images Tab -->
+                <div id="whiteboard-tab" class="tab-content p-6">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- @MAP: whiteboardImages.map(image => ( -->
+                        <div class="bg-muted/30 rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer">
+                            <!-- Whiteboard mathematical content image -->
+                            <img src="https://images.unsplash.com/photo-1635372722656-389f87a941b7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=300" alt="Whiteboard with mathematical equations and formulas" class="w-full h-48 object-cover rounded-lg mb-4"/>
+                            <h3 class="font-bold text-foreground mb-2" data-bind="image.title">حل تمارين الباب الأول</h3>
+                            <p class="text-sm text-muted-foreground mb-3" data-bind="image.date">منذ 3 أيام</p>
+                            <div class="flex items-center justify-between">
+                                <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                    الجبر
+                                </span>
+                                <button class="text-primary hover:text-primary/80 transition-colors">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Videos Tab -->
+                <div id="videos-tab" class="tab-content p-6 hidden">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- @MAP: videos.map(video => ( -->
+                        <div class="bg-muted/30 rounded-xl p-4 hover:shadow-lg transition-all">
+                            <div class="relative mb-4">
+                                <!-- Arabic teacher explaining mathematical concepts -->
+                                <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=225" alt="Arabic teacher explaining mathematical concepts on a whiteboard" class="w-full h-48 object-cover rounded-lg"/>
+                                <div class="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center">
+                                    <button class="bg-primary text-primary-foreground w-16 h-16 rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors">
+                                        <i class="fas fa-play text-xl mr-1"></i>
+                                    </button>
+                                </div>
+                                <div class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                                    <span data-bind="video.duration">12:45</span>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-foreground mb-2" data-bind="video.title">حل واجب الدرس الثالث</h3>
+                            <p class="text-sm text-muted-foreground mb-3" data-bind="video.description">شرح تفصيلي لحل جميع تمارين الواجب</p>
+                            <div class="flex items-center justify-between">
+                                <span class="bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium">
+                                    الهندسة
+                                </span>
+                                <span class="text-sm text-muted-foreground" data-bind="video.date">منذ يومين</span>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Quizzes Tab -->
+                <div id="quizzes-tab" class="tab-content p-6 hidden">
+                    <div class="space-y-4">
+                        <!-- @MAP: quizzes.map(quiz => ( -->
+                        <div class="bg-muted/30 rounded-xl p-6 hover:shadow-lg transition-all">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-foreground text-lg mb-2" data-bind="quiz.title">اختبار الباب الثاني - الهندسة التحليلية</h3>
+                                    <div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                        <span><i class="fas fa-questions-circle ml-2"></i><span data-bind="quiz.questionCount">15</span> سؤال</span>
+                                        <span><i class="fas fa-clock ml-2"></i><span data-bind="quiz.duration">45</span> دقيقة</span>
+                                        <span><i class="fas fa-calendar ml-2"></i>ينتهي في <span data-bind="quiz.deadline">يومين</span></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="bg-green-500/10 text-green-500 px-4 py-2 rounded-lg font-medium">
+                                            <span data-bind="quiz.status">مكتمل</span>
+                                        </div>
+                                        <div class="text-sm text-muted-foreground mt-1">
+                                            الدرجة: <span class="font-bold" data-bind="quiz.score">88%</span>
+                                        </div>
+                                    </div>
+                                    <button class="bg-muted text-muted-foreground px-4 py-2 rounded-lg hover:bg-muted/80 transition-colors">
+                                        عرض النتيجة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-muted/30 rounded-xl p-6 hover:shadow-lg transition-all">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-foreground text-lg mb-2">اختبار الباب الثالث - المثلثات</h3>
+                                    <div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                        <span><i class="fas fa-questions-circle ml-2"></i>20 سؤال</span>
+                                        <span><i class="fas fa-clock ml-2"></i>60 دقيقة</span>
+                                        <span><i class="fas fa-calendar ml-2"></i>ينتهي في 5 أيام</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-accent/10 text-accent px-4 py-2 rounded-lg font-medium">
+                                        متاح الآن
+                                    </div>
+                                    <button class="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                                        ابدأ الاختبار
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: StudentDashboard -->
+
+    <!-- Admin Dashboard -->
+    <!-- @COMPONENT: AdminDashboard -->
+    <div id="admin-dashboard" class="min-h-screen bg-muted/20 hidden">
+        <!-- Admin Navigation -->
+        <nav class="bg-card shadow-lg border-b border-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <div class="bg-primary p-2 rounded-lg">
+                            <i class="fas fa-user-tie text-primary-foreground"></i>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold text-foreground">مستر محمد السيد</span>
+                            <span class="text-sm text-muted-foreground block">لوحة التحكم</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <button class="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                            <i class="fas fa-plus ml-2"></i>
+                            إضافة محتوى جديد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Admin Stats -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">إجمالي الطلاب</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="adminStats.totalStudents">142</p>
+                        </div>
+                        <div class="bg-blue-500/10 p-3 rounded-lg">
+                            <i class="fas fa-users text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">الاختبارات النشطة</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="adminStats.activeQuizzes">6</p>
+                        </div>
+                        <div class="bg-accent/10 p-3 rounded-lg">
+                            <i class="fas fa-clipboard-list text-accent text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">المواد المرفوعة</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="adminStats.totalMaterials">89</p>
+                        </div>
+                        <div class="bg-green-500/10 p-3 rounded-lg">
+                            <i class="fas fa-file-alt text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">متوسط الأداء</p>
+                            <p class="text-2xl font-bold text-foreground" data-bind="adminStats.averagePerformance">82%</p>
+                        </div>
+                        <div class="bg-purple-500/10 p-3 rounded-lg">
+                            <i class="fas fa-chart-bar text-purple-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Quiz Analytics -->
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <h3 class="text-xl font-bold text-foreground mb-6">أحدث نتائج الاختبارات</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: recentQuizResults.map(result => ( -->
+                        <div class="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                            <div>
+                                <h4 class="font-medium text-foreground" data-bind="result.quizTitle">اختبار الباب الثاني</h4>
+                                <p class="text-sm text-muted-foreground">
+                                    <span data-bind="result.completedCount">35</span> من <span data-bind="result.totalStudents">42</span> طالب أكمل
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-foreground" data-bind="result.averageScore">78%</div>
+                                <div class="text-sm text-muted-foreground">متوسط</div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <h3 class="text-xl font-bold text-foreground mb-6">أوائل الطلاب</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: topStudents.map((student, index) => ( -->
+                        <div class="flex items-center space-x-reverse space-x-4 p-3 bg-muted/30 rounded-lg">
+                            <div class="bg-accent text-accent-foreground w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                                <span data-bind="index + 1">1</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-medium text-foreground" data-bind="student.name">أحمد محمد علي</h4>
+                                <p class="text-sm text-muted-foreground" data-bind="student.grade">الصف الثاني الثانوي</p>
+                            </div>
+                            <div class="text-lg font-bold text-primary" data-bind="student.totalScore">95%</div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AdminDashboard -->
+
+    <!-- Quiz Interface -->
+    <!-- @COMPONENT: QuizInterface -->
+    <div id="quiz-interface" class="min-h-screen bg-muted/20 hidden">
+        <div class="max-w-4xl mx-auto px-4 py-8">
+            <!-- Quiz Header -->
+            <div class="bg-card rounded-xl shadow-sm border border-border p-6 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-foreground mb-2" data-bind="quiz.title">اختبار الباب الثالث - المثلثات</h1>
+                        <div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                            <span><i class="fas fa-questions-circle ml-2"></i><span data-bind="quiz.totalQuestions">20</span> سؤال</span>
+                            <span><i class="fas fa-clock ml-2"></i><span data-bind="quiz.timeRemaining">45:30</span> متبقي</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="bg-muted text-muted-foreground px-4 py-2 rounded-lg hover:bg-muted/80 transition-colors">
+                            حفظ وإنهاء لاحقاً
+                        </button>
+                        <button class="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                            تسليم الاختبار
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="mt-6">
+                    <div class="flex justify-between text-sm text-muted-foreground mb-2">
+                        <span>السؤال <span data-bind="currentQuestion">3</span> من <span data-bind="totalQuestions">20</span></span>
+                        <span><span data-bind="answeredCount">2</span> تم الإجابة عليها</span>
+                    </div>
+                    <div class="w-full bg-muted rounded-full h-2">
+                        <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 15%" data-bind="progressPercentage"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-card rounded-xl shadow-sm border border-border p-8 mb-6">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                            <span data-bind="currentQuestionNumber">3</span>
+                        </div>
+                        <span class="bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium">
+                            اختيار من متعدد
+                        </span>
+                    </div>
+                    <h2 class="text-xl font-bold text-foreground leading-relaxed" data-bind="question.text">
+                        إذا كان جا θ = 3/5 وكان θ في الربع الأول، فما قيمة جتا θ؟
+                    </h2>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div class="space-y-4">
+                    <!-- @MAP: question.options.map((option, index) => ( -->
+                    <label class="flex items-center p-4 border border-border rounded-lg hover:bg-muted/30 cursor-pointer transition-colors">
+                        <input type="radio" name="answer" value="a" class="w-5 h-5 text-primary bg-background border-border focus:ring-ring ml-4">
+                        <span class="text-foreground" data-bind="option.text">4/5</span>
+                    </label>
+                    <label class="flex items-center p-4 border border-border rounded-lg hover:bg-muted/30 cursor-pointer transition-colors">
+                        <input type="radio" name="answer" value="b" class="w-5 h-5 text-primary bg-background border-border focus:ring-ring ml-4">
+                        <span class="text-foreground">3/4</span>
+                    </label>
+                    <label class="flex items-center p-4 border border-border rounded-lg hover:bg-muted/30 cursor-pointer transition-colors">
+                        <input type="radio" name="answer" value="c" class="w-5 h-5 text-primary bg-background border-border focus:ring-ring ml-4">
+                        <span class="text-foreground">5/4</span>
+                    </label>
+                    <label class="flex items-center p-4 border border-border rounded-lg hover:bg-muted/30 cursor-pointer transition-colors">
+                        <input type="radio" name="answer" value="d" class="w-5 h-5 text-primary bg-background border-border focus:ring-ring ml-4">
+                        <span class="text-foreground">3/5</span>
+                    </label>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between">
+                <button class="bg-muted text-muted-foreground px-6 py-3 rounded-lg hover:bg-muted/80 transition-colors font-medium">
+                    <i class="fas fa-arrow-right ml-2"></i>
+                    السؤال السابق
+                </button>
+                <button class="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                    السؤال التالي
+                    <i class="fas fa-arrow-left mr-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: QuizInterface -->
+
+    <script>
+        // Simple modal management - NOT for production use
+        (function() {
+            // Modal controls
+            const registerBtn = document.getElementById('register-btn');
+            const loginBtn = document.getElementById('login-btn');
+            const registerModal = document.getElementById('registration-modal');
+            const loginModal = document.getElementById('login-modal');
+            const closeRegister = document.getElementById('close-register');
+            const closeLogin = document.getElementById('close-login');
+            
+            // Page navigation
+            const landingPage = document.getElementById('landing-page');
+            const studentDashboard = document.getElementById('student-dashboard');
+            const adminDashboard = document.getElementById('admin-dashboard');
+            const quizInterface = document.getElementById('quiz-interface');
+
+            registerBtn?.addEventListener('click', () => {
+                registerModal.classList.remove('hidden');
+            });
+
+            loginBtn?.addEventListener('click', () => {
+                loginModal.classList.remove('hidden');
+            });
+
+            closeRegister?.addEventListener('click', () => {
+                registerModal.classList.add('hidden');
+            });
+
+            closeLogin?.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+            });
+
+            // Tab switching for student dashboard
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs
+                    tabBtns.forEach(t => t.classList.remove('active', 'border-primary', 'text-primary'));
+                    tabBtns.forEach(t => t.classList.add('border-transparent', 'text-muted-foreground'));
+                    
+                    // Add active class to clicked tab
+                    btn.classList.remove('border-transparent', 'text-muted-foreground');
+                    btn.classList.add('active', 'border-primary', 'text-primary');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    
+                    // Show target tab content
+                    document.getElementById(targetTab + '-tab').classList.remove('hidden');
+                });
+            });
+
+            // Demo navigation functions - TODO: Replace with proper routing
+            window.showStudentDashboard = function() {
+                landingPage.classList.add('hidden');
+                studentDashboard.classList.remove('hidden');
+                loginModal.classList.add('hidden');
+            };
+
+            window.showAdminDashboard = function() {
+                landingPage.classList.add('hidden');
+                adminDashboard.classList.remove('hidden');
+                loginModal.classList.add('hidden');
+            };
+
+            window.showQuizInterface = function() {
+                studentDashboard.classList.add('hidden');
+                quizInterface.classList.remove('hidden');
+            };
+
+            // Demo: Auto-show student dashboard after 3 seconds for preview
+            // setTimeout(showStudentDashboard, 3000);
+        })();
+    </script>
+</body>
+</html>
