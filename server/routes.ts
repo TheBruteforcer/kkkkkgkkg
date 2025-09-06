@@ -7,6 +7,7 @@ import type { User, Grade, Group } from "@shared/schema";
 declare module "express-session" {
   interface SessionData {
     userId: string;
+    adminVerified?: boolean;
   }
 }
 
@@ -29,6 +30,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(403).json({ message: "غير مصرح لك بالوصول" });
     }
     
+    // Additional security check for admin actions
+    if (!req.session.adminVerified) {
+      return res.status(403).json({ message: "يجب تأكيد هوية المدير" });
+    }
+    
     req.user = user;
     next();
   };
@@ -36,7 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
+      console.log("Registration attempt with data:", req.body);
       const userData = registerSchema.parse(req.body);
+      console.log("Parsed data:", userData);
       
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
@@ -45,6 +53,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = await storage.createUser(userData);
       req.session.userId = user.id;
+      
+      // Auto-verify admin if registering with admin role
+      if (user.role === "admin") {
+        req.session.adminVerified = true;
+      }
       
       res.json({ 
         user: { 
@@ -57,6 +70,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } 
       });
     } catch (error) {
+      console.error("Registration validation error:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+      }
       res.status(400).json({ message: "بيانات غير صحيحة" });
     }
   });
@@ -71,6 +88,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       req.session.userId = user.id;
+      
+      // Auto-verify admin if logging in with admin credentials
+      if (user.role === "admin") {
+        req.session.adminVerified = true;
+      }
       
       res.json({ 
         user: { 
@@ -91,6 +113,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     req.session.destroy(() => {
       res.json({ message: "تم تسجيل الخروج بنجاح" });
     });
+  });
+
+  // Admin verification endpoint
+  app.post("/api/admin/verify", requireAuth, async (req, res) => {
+    try {
+      const { password } = req.body;
+      const user = await storage.getUser(req.session.userId!);
+      
+      if (!user || user.role !== "admin" || user.password !== password) {
+        return res.status(401).json({ message: "كلمة مرور المدير غير صحيحة" });
+      }
+      
+      req.session.adminVerified = true;
+      res.json({ message: "تم تأكيد هوية المدير بنجاح" });
+    } catch (error) {
+      res.status(400).json({ message: "خطأ في البيانات" });
+    }
+  });
+
+  // Get comprehensive admin stats
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      // Get all users directly from storage
+      const users = Array.from((storage as any).users.values());
+      const materials = await storage.getMaterials();
+      const quizzes = Array.from((storage as any).quizzes.values());
+      const allAttempts = Array.from((storage as any).quizAttempts.values());
+      
+      const totalStudents = users.filter(u => u.role === "student").length;
+      const totalMaterials = materials.length;
+      const activeQuizzes = quizzes.filter(q => q.isActive && new Date(q.deadline) > new Date()).length;
+      const completedAttempts = allAttempts.filter(a => a.completedAt).length;
+      const averageScore = completedAttempts.length > 0 
+        ? completedAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / completedAttempts.length 
+        : 0;
+      
+      // Material breakdown
+      const whiteboardImages = materials.filter(m => m.type === "whiteboard").length;
+      const videos = materials.filter(m => m.type === "video").length;
+      const documents = materials.filter(m => m.type === "document").length;
+      
+      // Recent activity (last 5)
+      const recentMaterials = materials.slice(0, 5);
+      const recentQuizzes = quizzes.slice(0, 5);
+      const recentAttempts = allAttempts.slice(0, 10);
+      
+      // Grade and group analysis
+      const gradeDistribution = {};
+      const groupDistribution = {};
+      users.filter(u => u.role === "student").forEach(user => {
+        if (user.grade) gradeDistribution[user.grade] = (gradeDistribution[user.grade] || 0) + 1;
+        if (user.group) groupDistribution[user.group] = (groupDistribution[user.group] || 0) + 1;
+      });
+      
+      res.json({
+        stats: {
+          totalStudents,
+          totalMaterials,
+          activeQuizzes,
+          completedAttempts,
+          averageScore: Math.round(averageScore * 100) / 100,
+          materialBreakdown: {
+            whiteboard: whiteboardImages,
+            video: videos,
+            document: documents
+          },
+          gradeDistribution,
+          groupDistribution
+        },
+        recentActivity: {
+          materials: recentMaterials,
+          quizzes: recentQuizzes,
+          attempts: recentAttempts
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في جلب الإحصائيات" });
+    }
+  });
+
+  // Get all users for admin management
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const users = Array.from((storage as any).users.values());
+      // Remove passwords from response for security
+      const safeUsers = users.map(({ password, ...user }) => user);
+      res.json({ users: safeUsers });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في جلب المستخدمين" });
+    }
   });
 
   app.get("/api/auth/me", async (req, res) => {
@@ -369,6 +481,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "تم حذف المجموعة بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "خطأ في حذف المجموعة" });
+    }
+  });
+
+  // Delete user endpoint
+  app.delete("/api/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const users = (storage as any).users;
+      const user = users.get(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "المستخدم غير موجود" });
+      }
+      
+      // Prevent deleting admin users
+      if (user.role === "admin") {
+        return res.status(403).json({ message: "لا يمكن حذف المديرين" });
+      }
+      
+      users.delete(id);
+      res.json({ message: "تم حذف المستخدم بنجاح" });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في حذف المستخدم" });
     }
   });
 

@@ -9,6 +9,7 @@ import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import StudentDashboard from "@/pages/student-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import SecureAdminPanel from "@/pages/secure-admin-panel";
 import QuizPage from "@/pages/quiz";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/register" component={RegisterPage} />
       <Route path="/student-dashboard" component={StudentDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/secure-admin-control-panel" component={SecureAdminPanel} />
       <Route path="/quiz/:id" component={QuizPage} />
       <Route component={NotFound} />
     </Switch>

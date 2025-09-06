@@ -108,8 +108,17 @@ export const loginSchema = z.object({
 
 export const registerSchema = insertUserSchema.extend({
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
-  grade: z.string().min(1, "يرجى اختيار المرحلة الدراسية"),
-  group: z.string().min(1, "يرجى اختيار المجموعة"),
+  grade: z.string().optional(),
+  group: z.string().optional(),
+}).refine((data) => {
+  // Only require grade and group for students
+  if (data.role === "student") {
+    return data.grade && data.grade.length > 0 && data.group && data.group.length > 0;
+  }
+  return true;
+}, {
+  message: "يرجى اختيار المرحلة الدراسية والمجموعة للطلاب",
+  path: ["grade"], // This will show the error on the grade field
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
