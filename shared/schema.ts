@@ -53,6 +53,24 @@ export const quizAttempts = pgTable("quiz_attempts", {
   attemptNumber: integer("attempt_number").notNull(),
 });
 
+export const grades = pgTable("grades", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // e.g., "الصف الأول الإعدادي"
+  code: text("code").notNull().unique(), // e.g., "grade-1"
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const groups = pgTable("groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // e.g., "المجموعة أ"
+  code: text("code").notNull().unique(), // e.g., "group-a"
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -71,6 +89,16 @@ export const insertQuizSchema = createInsertSchema(quizzes).omit({
 export const insertQuizAttemptSchema = createInsertSchema(quizAttempts).omit({
   id: true,
   startedAt: true,
+});
+
+export const insertGradeSchema = createInsertSchema(grades).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGroupSchema = createInsertSchema(groups).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const loginSchema = z.object({
@@ -92,5 +120,9 @@ export type InsertQuiz = z.infer<typeof insertQuizSchema>;
 export type Quiz = typeof quizzes.$inferSelect;
 export type InsertQuizAttempt = z.infer<typeof insertQuizAttemptSchema>;
 export type QuizAttempt = typeof quizAttempts.$inferSelect;
+export type InsertGrade = z.infer<typeof insertGradeSchema>;
+export type Grade = typeof grades.$inferSelect;
+export type InsertGroup = z.infer<typeof insertGroupSchema>;
+export type Group = typeof groups.$inferSelect;
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;

@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Material, type InsertMaterial, type Quiz, type InsertQuiz, type QuizAttempt, type InsertQuizAttempt } from "@shared/schema";
+import { type User, type InsertUser, type Material, type InsertMaterial, type Quiz, type InsertQuiz, type QuizAttempt, type InsertQuizAttempt, type Grade, type InsertGrade, type Group, type InsertGroup } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -33,6 +33,20 @@ export interface IStorage {
     completionRate: number;
     topScores: { userId: string; userName: string; score: number }[];
   }>;
+
+  // Grade operations
+  getGrades(): Promise<Grade[]>;
+  getGrade(id: string): Promise<Grade | undefined>;
+  createGrade(grade: InsertGrade): Promise<Grade>;
+  updateGrade(id: string, updates: Partial<Grade>): Promise<Grade | undefined>;
+  deleteGrade(id: string): Promise<boolean>;
+
+  // Group operations
+  getGroups(): Promise<Group[]>;
+  getGroup(id: string): Promise<Group | undefined>;
+  createGroup(group: InsertGroup): Promise<Group>;
+  updateGroup(id: string, updates: Partial<Group>): Promise<Group | undefined>;
+  deleteGroup(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -40,12 +54,16 @@ export class MemStorage implements IStorage {
   private materials: Map<string, Material>;
   private quizzes: Map<string, Quiz>;
   private quizAttempts: Map<string, QuizAttempt>;
+  private grades: Map<string, Grade>;
+  private groups: Map<string, Group>;
 
   constructor() {
     this.users = new Map();
     this.materials = new Map();
     this.quizzes = new Map();
     this.quizAttempts = new Map();
+    this.grades = new Map();
+    this.groups = new Map();
     
     // Create admin user
     const adminId = randomUUID();
@@ -58,6 +76,48 @@ export class MemStorage implements IStorage {
       grade: null,
       group: null,
       createdAt: new Date(),
+    });
+
+    // Create default grades
+    this.createDefaultGrades();
+    
+    // Create default groups
+    this.createDefaultGroups();
+  }
+
+  private createDefaultGrades() {
+    const defaultGrades = [
+      { name: "الصف الأول الإعدادي", code: "grade-1", description: "الصف الأول الإعدادي" },
+      { name: "الصف الثاني الإعدادي", code: "grade-2", description: "الصف الثاني الإعدادي" },
+      { name: "الصف الثالث الإعدادي", code: "grade-3", description: "الصف الثالث الإعدادي" },
+    ];
+
+    defaultGrades.forEach(grade => {
+      const id = randomUUID();
+      this.grades.set(id, {
+        ...grade,
+        id,
+        isActive: true,
+        createdAt: new Date()
+      });
+    });
+  }
+
+  private createDefaultGroups() {
+    const defaultGroups = [
+      { name: "المجموعة أ", code: "group-a", description: "المجموعة الأولى" },
+      { name: "المجموعة ب", code: "group-b", description: "المجموعة الثانية" },
+      { name: "المجموعة ج", code: "group-c", description: "المجموعة الثالثة" },
+    ];
+
+    defaultGroups.forEach(group => {
+      const id = randomUUID();
+      this.groups.set(id, {
+        ...group,
+        id,
+        isActive: true,
+        createdAt: new Date()
+      });
     });
   }
 
@@ -251,6 +311,80 @@ export class MemStorage implements IStorage {
       completionRate,
       topScores,
     };
+  }
+
+  // Grade operations
+  async getGrades(): Promise<Grade[]> {
+    return Array.from(this.grades.values()).sort((a, b) => 
+      a.createdAt!.getTime() - b.createdAt!.getTime()
+    );
+  }
+
+  async getGrade(id: string): Promise<Grade | undefined> {
+    return this.grades.get(id);
+  }
+
+  async createGrade(insertGrade: InsertGrade): Promise<Grade> {
+    const id = randomUUID();
+    const grade: Grade = {
+      ...insertGrade,
+      id,
+      createdAt: new Date(),
+      description: insertGrade.description || null,
+      isActive: insertGrade.isActive !== undefined ? insertGrade.isActive : null
+    };
+    this.grades.set(id, grade);
+    return grade;
+  }
+
+  async updateGrade(id: string, updates: Partial<Grade>): Promise<Grade | undefined> {
+    const grade = this.grades.get(id);
+    if (!grade) return undefined;
+    
+    const updatedGrade = { ...grade, ...updates };
+    this.grades.set(id, updatedGrade);
+    return updatedGrade;
+  }
+
+  async deleteGrade(id: string): Promise<boolean> {
+    return this.grades.delete(id);
+  }
+
+  // Group operations
+  async getGroups(): Promise<Group[]> {
+    return Array.from(this.groups.values()).sort((a, b) => 
+      a.createdAt!.getTime() - b.createdAt!.getTime()
+    );
+  }
+
+  async getGroup(id: string): Promise<Group | undefined> {
+    return this.groups.get(id);
+  }
+
+  async createGroup(insertGroup: InsertGroup): Promise<Group> {
+    const id = randomUUID();
+    const group: Group = {
+      ...insertGroup,
+      id,
+      createdAt: new Date(),
+      description: insertGroup.description || null,
+      isActive: insertGroup.isActive !== undefined ? insertGroup.isActive : null
+    };
+    this.groups.set(id, group);
+    return group;
+  }
+
+  async updateGroup(id: string, updates: Partial<Group>): Promise<Group | undefined> {
+    const group = this.groups.get(id);
+    if (!group) return undefined;
+    
+    const updatedGroup = { ...group, ...updates };
+    this.groups.set(id, updatedGroup);
+    return updatedGroup;
+  }
+
+  async deleteGroup(id: string): Promise<boolean> {
+    return this.groups.delete(id);
   }
 }
 

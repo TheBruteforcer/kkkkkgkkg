@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, registerSchema, insertMaterialSchema, insertQuizSchema, insertQuizAttemptSchema } from "@shared/schema";
-import type { User } from "@shared/schema";
+import { loginSchema, registerSchema, insertMaterialSchema, insertQuizSchema, insertQuizAttemptSchema, insertGradeSchema, insertGroupSchema } from "@shared/schema";
+import type { User, Grade, Group } from "@shared/schema";
 
 declare module "express-session" {
   interface SessionData {
@@ -275,6 +275,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ attempt });
     } catch (error) {
       res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+  });
+
+  // Grades routes
+  app.get("/api/grades", requireAdmin, async (req, res) => {
+    try {
+      const grades = await storage.getGrades();
+      res.json({ grades });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في جلب المراحل الدراسية" });
+    }
+  });
+
+  app.post("/api/grades", requireAdmin, async (req, res) => {
+    try {
+      const gradeData = insertGradeSchema.parse(req.body);
+      const grade = await storage.createGrade(gradeData);
+      res.json({ grade });
+    } catch (error) {
+      res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+  });
+
+  app.put("/api/grades/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const grade = await storage.updateGrade(id, updates);
+      if (!grade) {
+        return res.status(404).json({ message: "المرحلة الدراسية غير موجودة" });
+      }
+      res.json({ grade });
+    } catch (error) {
+      res.status(400).json({ message: "خطأ في تحديث المرحلة الدراسية" });
+    }
+  });
+
+  app.delete("/api/grades/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteGrade(id);
+      if (!success) {
+        return res.status(404).json({ message: "المرحلة الدراسية غير موجودة" });
+      }
+      res.json({ message: "تم حذف المرحلة الدراسية بنجاح" });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في حذف المرحلة الدراسية" });
+    }
+  });
+
+  // Groups routes
+  app.get("/api/groups", requireAdmin, async (req, res) => {
+    try {
+      const groups = await storage.getGroups();
+      res.json({ groups });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في جلب المجموعات" });
+    }
+  });
+
+  app.post("/api/groups", requireAdmin, async (req, res) => {
+    try {
+      const groupData = insertGroupSchema.parse(req.body);
+      const group = await storage.createGroup(groupData);
+      res.json({ group });
+    } catch (error) {
+      res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+  });
+
+  app.put("/api/groups/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const group = await storage.updateGroup(id, updates);
+      if (!group) {
+        return res.status(404).json({ message: "المجموعة غير موجودة" });
+      }
+      res.json({ group });
+    } catch (error) {
+      res.status(400).json({ message: "خطأ في تحديث المجموعة" });
+    }
+  });
+
+  app.delete("/api/groups/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteGroup(id);
+      if (!success) {
+        return res.status(404).json({ message: "المجموعة غير موجودة" });
+      }
+      res.json({ message: "تم حذف المجموعة بنجاح" });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في حذف المجموعة" });
     }
   });
 
