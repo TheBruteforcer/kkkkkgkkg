@@ -14,6 +14,8 @@ import Navigation from "@/components/navigation";
 import { useCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import QuizCreationDialog from "@/components/quiz-creation-dialog";
+import MaterialUploadDialog from "@/components/material-upload-dialog";
 import type { Material, Quiz, QuizAttempt, User, Grade, Group } from "@shared/schema";
 
 interface AdminStats {
@@ -305,7 +307,7 @@ export default function SecureAdminPanel() {
             <Card className="bg-slate-800 border-slate-700">
               <CardContent className="p-6">
                 <Tabs defaultValue="dashboard" className="w-full">
-                  <TabsList className="grid w-full grid-cols-6 bg-slate-700">
+                  <TabsList className="grid w-full grid-cols-7 bg-slate-700">
                     <TabsTrigger value="dashboard" className="data-[state=active]:bg-slate-600">
                       📊 الإحصائيات
                     </TabsTrigger>
@@ -314,6 +316,9 @@ export default function SecureAdminPanel() {
                     </TabsTrigger>
                     <TabsTrigger value="content" className="data-[state=active]:bg-slate-600">
                       📚 إدارة المحتوى
+                    </TabsTrigger>
+                    <TabsTrigger value="quizzes" className="data-[state=active]:bg-slate-600">
+                      📝 إدارة الاختبارات
                     </TabsTrigger>
                     <TabsTrigger value="grades" className="data-[state=active]:bg-slate-600">
                       🎓 المراحل الدراسية
@@ -497,64 +502,9 @@ export default function SecureAdminPanel() {
                       <h3 className="text-xl font-semibold text-white">
                         إدارة المحتوى التعليمي ({materials.length})
                       </h3>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button className="bg-purple-600 hover:bg-purple-700" data-testid="button-add-material">
-                            <i className="fas fa-plus ml-2"></i>
-                            إضافة مادة جديدة
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[500px] bg-slate-800 border-slate-700">
-                          <DialogHeader>
-                            <DialogTitle className="text-white">إضافة مادة تعليمية جديدة</DialogTitle>
-                          </DialogHeader>
-                          <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="material-title" className="text-slate-300">عنوان المادة</Label>
-                              <Input
-                                id="material-title"
-                                value={materialForm.title}
-                                onChange={(e) => setMaterialForm(prev => ({ ...prev, title: e.target.value }))}
-                                placeholder="أدخل عنوان المادة"
-                                className="bg-slate-700 border-slate-600 text-white"
-                                data-testid="input-material-title"
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="material-url" className="text-slate-300">رابط المادة</Label>
-                              <Input
-                                id="material-url"
-                                value={materialForm.url}
-                                onChange={(e) => setMaterialForm(prev => ({ ...prev, url: e.target.value }))}
-                                placeholder="https://..."
-                                className="bg-slate-700 border-slate-600 text-white"
-                                data-testid="input-material-url"
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="material-subject" className="text-slate-300">المادة الدراسية</Label>
-                              <Input
-                                id="material-subject"
-                                value={materialForm.subject}
-                                onChange={(e) => setMaterialForm(prev => ({ ...prev, subject: e.target.value }))}
-                                placeholder="مثال: الرياضيات"
-                                className="bg-slate-700 border-slate-600 text-white"
-                                data-testid="input-material-subject"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button 
-                              onClick={() => createMaterialMutation.mutate(materialForm)}
-                              disabled={!materialForm.title || !materialForm.url || createMaterialMutation.isPending}
-                              className="bg-purple-600 hover:bg-purple-700"
-                              data-testid="button-create-material"
-                            >
-                              {createMaterialMutation.isPending ? "جاري الإضافة..." : "إضافة المادة"}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <div className="flex gap-2">
+                        <QuizCreationDialog grades={grades} groups={groups} />
+                        <MaterialUploadDialog grades={grades} groups={groups} />
                     </div>
                     
                     <div className="grid gap-4">
@@ -598,6 +548,73 @@ export default function SecureAdminPanel() {
                           </CardContent>
                         </Card>
                       ))}
+                    </div>
+                  </TabsContent>
+
+                  {/* Quiz Management Tab */}
+                  <TabsContent value="quizzes" className="space-y-6 mt-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-xl font-semibold text-white">
+                        إدارة الاختبارات ({quizzes.length})
+                      </h3>
+                      <QuizCreationDialog grades={grades} groups={groups} />
+                    </div>
+                    
+                    <div className="grid gap-4">
+                      {quizzes.map((quiz) => (
+                        <Card key={quiz.id} className="bg-slate-700/50 border-slate-600">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-white">{quiz.title}</h4>
+                                <p className="text-sm text-slate-400">{quiz.subject}</p>
+                                <div className="flex gap-2 mt-2">
+                                  <Badge variant="outline" className="text-slate-300">
+                                    {quiz.grade}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-slate-300">
+                                    {quiz.group}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-slate-300">
+                                    {quiz.duration} دقيقة
+                                  </Badge>
+                                  <Badge variant={quiz.isActive ? "default" : "destructive"} className={quiz.isActive ? "bg-green-600" : ""}>
+                                    {quiz.isActive ? "نشط" : "غير نشط"}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  ينتهي: {new Date(quiz.deadline).toLocaleDateString('ar')}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="border-slate-500 text-slate-300"
+                                  data-testid={`button-edit-quiz-${quiz.id}`}
+                                >
+                                  <i className="fas fa-edit"></i>
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  data-testid={`button-delete-quiz-${quiz.id}`}
+                                >
+                                  <i className="fas fa-trash"></i>
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      {quizzes.length === 0 && (
+                        <div className="text-center py-12">
+                          <div className="text-4xl mb-4">📝</div>
+                          <h4 className="text-lg font-semibold text-white mb-2">لا توجد اختبارات حالياً</h4>
+                          <p className="text-slate-400 mb-4">ابدأ بإنشاء اختبار جديد للطلاب</p>
+                          <QuizCreationDialog grades={grades} groups={groups} />
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
 

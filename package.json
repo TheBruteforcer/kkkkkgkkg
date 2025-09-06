@@ -5,11 +5,16 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "cd client && npm install && npm run build",
-    "build:server": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm install && npm run build",
+    "build:server": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --external:@supabase/supabase-js",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "install:all": "npm install && cd client && npm install",
+    "clean": "rm -rf dist client/dist node_modules client/node_modules",
+    "deploy:vercel": "vercel --prod",
+    "init:db": "tsx server/initDb.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -74,7 +79,8 @@
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
     "@supabase/supabase-js": "^2.39.0",
-    "zod-validation-error": "^3.4.0"
+    "zod-validation-error": "^3.4.0",
+    "@types/node": "^20.16.11"
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.3.0",

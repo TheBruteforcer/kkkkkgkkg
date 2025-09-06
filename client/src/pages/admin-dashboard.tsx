@@ -12,6 +12,8 @@ import Navigation from "@/components/navigation";
 import { useCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import QuizCreationDialog from "@/components/quiz-creation-dialog";
+import MaterialUploadDialog from "@/components/material-upload-dialog";
 import type { Material, Quiz, QuizAttempt, User, Grade, Group } from "@shared/schema";
 
 export default function AdminDashboard() {
@@ -521,15 +523,9 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-create-quiz">
-                <i className="fas fa-plus-circle text-xl"></i>
-                إنشاء اختبار جديد
-              </Button>
+              <QuizCreationDialog grades={grades} groups={groups} />
               
-              <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-upload-material">
-                <i className="fas fa-upload text-xl"></i>
-                رفع مادة تعليمية
-              </Button>
+              <MaterialUploadDialog grades={grades} groups={groups} />
               
               <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-view-analytics">
                 <i className="fas fa-chart-line text-xl"></i>

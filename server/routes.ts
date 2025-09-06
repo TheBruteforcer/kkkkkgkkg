@@ -135,11 +135,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get comprehensive admin stats
   app.get("/api/admin/stats", requireAdmin, async (req, res) => {
     try {
-      // Get all users directly from storage
-      const users: any[] = [];
+      const users = await storage.getAllUsers();
       const materials = await storage.getMaterials();
       const quizzes = await storage.getQuizzes();
+      
+      // Get all quiz attempts for statistics
       const allAttempts: any[] = [];
+      for (const quiz of quizzes) {
+        const stats = await storage.getQuizStats(quiz.id);
+        allAttempts.push(...Array(stats.totalAttempts).fill(null).map((_, i) => ({
+          quizId: quiz.id,
+          score: stats.averageScore,
+          completedAt: new Date().toISOString()
+        })));
+      }
       
       const totalStudents = users.filter((u: any) => u.role === "student").length;
       const totalMaterials = materials.length;
@@ -196,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all users for admin management
   app.get("/api/admin/users", requireAdmin, async (req, res) => {
     try {
-      const users: any[] = [];
+      const users = await storage.getAllUsers();
       // Remove passwords from response for security
       const safeUsers = users.map(({ password, ...user }: any) => user);
       res.json({ users: safeUsers });
@@ -332,6 +341,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ quiz });
     } catch (error) {
       res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+  });
+
+  app.put("/api/quizzes/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const quiz = await storage.updateQuiz(id, updates);
+      
+      if (!quiz) {
+        return res.status(404).json({ message: "الاختبار غير موجود" });
+      }
+      
+      res.json({ quiz });
+    } catch (error) {
+      res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+  });
+
+  app.delete("/api/quizzes/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteQuiz(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "الاختبار غير موجود" });
+      }
+      
+      res.json({ message: "تم حذف الاختبار بنجاح" });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في الخادم" });
     }
   });
 
@@ -484,14 +524,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User update endpoint
+  app.put("/api/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const user = await storage.updateUser(id, updates);
+      
+      if (!user) {
+        return res.status(404).json({ message: "المستخدم غير موجود" });
+      }
+      
+      // Remove password from response for security
+      const { password, ...safeUser } = user;
+      res.json({ user: safeUser });
+    } catch (error) {
+      res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+  });
+
   // Delete user endpoint
   app.delete("/api/users/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      // For now, return success since we don't have user management in SupabaseStorage yet
+      const success = await storage.deleteUser(id);
+      if (!success) {
+        return res.status(404).json({ message: "المستخدم غير موجود" });
+      }
       res.json({ message: "تم حذف المستخدم بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "خطأ في حذف المستخدم" });
+    }
+  });
+
+  // Delete quiz attempt endpoint
+  app.delete("/api/quiz-attempts/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Check if the attempt belongs to the current user
+      const attempt = await storage.getQuizAttempt(id);
+      if (!attempt || attempt.userId !== req.session.userId) {
+        return res.status(404).json({ message: "المحاولة غير موجودة" });
+      }
+      
+      const success = await storage.deleteQuizAttempt(id);
+      if (!success) {
+        return res.status(404).json({ message: "المحاولة غير موجودة" });
+      }
+      
+      res.json({ message: "تم حذف المحاولة بنجاح" });
+    } catch (error) {
+      res.status(500).json({ message: "خطأ في حذف المحاولة" });
     }
   });
 

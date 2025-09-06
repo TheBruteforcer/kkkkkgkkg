@@ -211,7 +211,12 @@ export class SupabaseStorage implements IStorage {
   }> {
     const { data: attempts, error } = await supabase
       .from('quiz_attempts')
-      .select('*')
+      .select(`
+        *,
+        users:user_id (
+          name
+        )
+      `)
       .eq('quiz_id', quizId);
     
     if (error || !attempts) {
@@ -236,7 +241,7 @@ export class SupabaseStorage implements IStorage {
       .slice(0, 10)
       .map((a: any) => ({
         userId: a.user_id,
-        userName: "Unknown", // You might want to join with users table
+        userName: a.users?.name || "Unknown",
         score: a.score || 0,
       }));
 
@@ -341,6 +346,33 @@ export class SupabaseStorage implements IStorage {
   async deleteGroup(id: string): Promise<boolean> {
     const { error } = await supabase
       .from('groups')
+      .delete()
+      .eq('id', id);
+    return !error;
+  }
+
+  // Additional methods for admin functionality
+  async getAllUsers(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) return [];
+    return data as User[];
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+    return !error;
+  }
+
+  // Additional methods for quiz attempts
+  async deleteQuizAttempt(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('quiz_attempts')
       .delete()
       .eq('id', id);
     return !error;

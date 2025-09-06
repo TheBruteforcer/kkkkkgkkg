@@ -1,8 +1,9 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/navigation";
+import AuthGuard from "@/components/auth-guard";
 
-export default function LandingPage() {
+function LandingPageContent() {
   const [, setLocation] = useLocation();
 
   return (
@@ -163,3 +164,11 @@ const features = [
     description: "محرك بحث متطور للعثور على المحتوى أو الألعاب بسهولة وسرعة"
   }
 ];
+
+export default function LandingPage() {
+  return (
+    <AuthGuard redirectTo="/">
+      <LandingPageContent />
+    </AuthGuard>
+  );
+}

@@ -10,24 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useLogin, useCurrentUser } from "@/lib/auth";
 import { loginSchema, type LoginData } from "@shared/schema";
 import Navigation from "@/components/navigation";
+import AuthGuard from "@/components/auth-guard";
 import { useEffect } from "react";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const login = useLogin();
-  const { data: currentUser } = useCurrentUser();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (currentUser?.user) {
-      if (currentUser.user.role === "admin") {
-        setLocation("/admin-dashboard");
-      } else {
-        setLocation("/student-dashboard");
-      }
-    }
-  }, [currentUser, setLocation]);
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema as any),
@@ -133,5 +122,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <AuthGuard redirectTo="/">
+      <LoginPageContent />
+    </AuthGuard>
   );
 }

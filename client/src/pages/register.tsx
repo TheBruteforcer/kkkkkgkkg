@@ -12,8 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useRegister } from "@/lib/auth";
 import { registerSchema, type RegisterData } from "@shared/schema";
 import Navigation from "@/components/navigation";
+import AuthGuard from "@/components/auth-guard";
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const register = useRegister();
@@ -251,5 +252,13 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <AuthGuard redirectTo="/">
+      <RegisterPageContent />
+    </AuthGuard>
   );
 }

@@ -48,6 +48,11 @@ export interface IStorage {
   createGroup(group: InsertGroup): Promise<Group>;
   updateGroup(id: string, updates: Partial<Group>): Promise<Group | undefined>;
   deleteGroup(id: string): Promise<boolean>;
+
+  // Additional admin operations
+  getAllUsers(): Promise<User[]>;
+  deleteUser(id: string): Promise<boolean>;
+  deleteQuizAttempt(id: string): Promise<boolean>;
 }
 
 export const storage = new SupabaseStorage();
