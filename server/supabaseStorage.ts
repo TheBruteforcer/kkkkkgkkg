@@ -223,18 +223,18 @@ export class SupabaseStorage implements IStorage {
       };
     }
 
-    const completedAttempts = attempts.filter(a => a.completed_at && a.score !== null);
+    const completedAttempts = attempts.filter((a: any) => a.completed_at && a.score !== null);
     
     const totalAttempts = attempts.length;
     const averageScore = completedAttempts.length > 0 
-      ? completedAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / completedAttempts.length
+      ? completedAttempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0) / completedAttempts.length
       : 0;
     const completionRate = totalAttempts > 0 ? (completedAttempts.length / totalAttempts) * 100 : 0;
     
     const topScores = completedAttempts
-      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
       .slice(0, 10)
-      .map(a => ({
+      .map((a: any) => ({
         userId: a.user_id,
         userName: "Unknown", // You might want to join with users table
         score: a.score || 0,

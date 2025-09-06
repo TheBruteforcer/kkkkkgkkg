@@ -21,7 +21,7 @@ export default function RegisterPage() {
   const [adminCode, setAdminCode] = useState("");
 
   const form = useForm<RegisterData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema as any),
     defaultValues: {
       name: "",
       email: "",
