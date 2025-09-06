@@ -75,7 +75,10 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      role: insertUser.role || "student",
+      grade: insertUser.grade || null,
+      group: insertUser.group || null
     };
     this.users.set(id, user);
     return user;
@@ -114,6 +117,7 @@ export class MemStorage implements IStorage {
       ...insertMaterial,
       id,
       createdAt: new Date(),
+      description: insertMaterial.description || null
     };
     this.materials.set(id, material);
     return material;
@@ -156,6 +160,9 @@ export class MemStorage implements IStorage {
       ...insertQuiz,
       id,
       createdAt: new Date(),
+      description: insertQuiz.description || null,
+      maxAttempts: insertQuiz.maxAttempts || null,
+      isActive: insertQuiz.isActive !== undefined ? insertQuiz.isActive : null
     };
     this.quizzes.set(id, quiz);
     return quiz;
@@ -196,6 +203,7 @@ export class MemStorage implements IStorage {
       id,
       startedAt: new Date(),
       completedAt: null,
+      score: insertAttempt.score || null
     };
     this.quizAttempts.set(id, attempt);
     return attempt;
