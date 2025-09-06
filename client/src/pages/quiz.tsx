@@ -40,7 +40,7 @@ export default function QuizPage() {
       const response = await apiRequest("POST", "/api/quiz-attempts", {
         quizId: id,
         answers: {},
-        totalQuestions: quizData?.quiz.questions.length || 0,
+        totalQuestions: Array.isArray(quizData?.quiz.questions) ? quizData.quiz.questions.length : 0,
         attemptNumber: 1,
       });
       return response.json();
@@ -56,7 +56,7 @@ export default function QuizPage() {
       if (!attemptId) throw new Error("No attempt ID");
       
       // Calculate score
-      const questions = quizData?.quiz.questions || [];
+      const questions = Array.isArray(quizData?.quiz.questions) ? quizData.quiz.questions : [];
       let score = 0;
       
       questions.forEach((question: any, index: number) => {
@@ -139,7 +139,7 @@ export default function QuizPage() {
   }
 
   const quiz = quizData.quiz;
-  const questions = quiz.questions || [];
+  const questions = Array.isArray(quiz.questions) ? quiz.questions : [];
   const currentQuestion = questions[currentQuestionIndex];
   
   if (!attemptId) {

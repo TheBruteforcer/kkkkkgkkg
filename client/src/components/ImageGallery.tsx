@@ -12,7 +12,7 @@ export default function ImageGallery() {
         const urls = data
           .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
           .map(file =>
-            supabase.storage.from('images').getPublicUrl(`public/${file.name}`).publicUrl
+            supabase.storage.from('images').getPublicUrl(`public/${file.name}`).data.publicUrl
           );
         setImages(urls);
       }
