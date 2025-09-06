@@ -6,64 +6,59 @@ export default function LandingPage() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       {/* Hero Section */}
       <section className="gradient-bg py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-right animate-fade-in">
-              <h1 className="text-4xl lg:text-6xl font-bold text-primary-foreground mb-6">
-                مرحباً بك في منصة
-                <span className="block text-accent">مستر محمد السيد</span>
-              </h1>
-              <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-                منصة تعليمية متطورة توفر لك أفضل تجربة تعلم تفاعلية مع محتوى عالي الجودة ومتابعة مستمرة لتقدمك الأكاديمي
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button 
-                  size="lg"
-                  className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all"
-                  onClick={() => setLocation("/register")}
-                  data-testid="button-start-journey"
-                >
-                  ابدأ رحلتك التعليمية
-                </Button>
-                <Button 
-                  variant="outline"
-                  size="lg"
-                  className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/30 font-medium text-lg px-8 py-4 rounded-xl"
-                  data-testid="button-learn-more"
-                >
-                  تعرف على المزيد
-                </Button>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center animate-fade-in">
+          <h1 className="text-4xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
+            منصة <span className="text-accent">GameNightBalancer</span>
+          </h1>
+          <p className="text-xl text-primary-foreground/90 mb-8 max-w-2xl">
+            سهّل تنظيم وتوزيع الألعاب بين الأصدقاء أو الطلاب مع منصة متكاملة وسهلة الاستخدام.
+          </p>
+          <Button
+            size="lg"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all"
+            onClick={() => setLocation("/register")}
+            data-testid="button-start-journey"
+          >
+            ابدأ الآن
+          </Button>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-10 text-center">كيف تعمل المنصة؟</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {howItWorks.map((step) => (
+              <div key={step.id} className="bg-card p-6 rounded-2xl shadow-md flex flex-col items-center animate-slide-up">
+                <div className="w-14 h-14 flex items-center justify-center rounded-full mb-4 text-2xl bg-primary/10 text-primary">
+                  <i className={step.icon}></i>
+                </div>
+                <h3 className="text-lg font-bold mb-2 text-foreground">{step.title}</h3>
+                <p className="text-muted-foreground text-sm text-center">{step.description}</p>
               </div>
-            </div>
-            <div className="flex justify-center lg:justify-start animate-float">
-              <img 
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=600" 
-                alt="Students collaborating on educational technology"
-                className="rounded-2xl shadow-2xl w-full max-w-md lg:max-w-lg"
-              />
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-slide-up">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">ميزات المنصة</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">مميزات المنصة</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              تجربة تعليمية شاملة مصممة خصيصاً لتلبية احتياجات الطلاب العرب
+              كل ما تحتاجه لتنظيم فعاليات الألعاب أو الدراسة بسهولة وفعالية
             </p>
           </div>
-          
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={feature.id}
                 className="bg-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 animate-slide-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
@@ -78,9 +73,45 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Call to Action */}
+      <section className="py-12 bg-accent/10">
+        <div className="max-w-2xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold mb-4 text-accent">جاهز لتجربة أفضل تنظيم؟</h2>
+          <p className="mb-6 text-muted-foreground">سجّل الآن وابدأ بتنظيم فعالياتك بسهولة واحترافية.</p>
+          <Button
+            size="lg"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all"
+            onClick={() => setLocation("/register")}
+          >
+            إنشاء حساب جديد
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
+
+const howItWorks = [
+  {
+    id: 1,
+    icon: "fas fa-user-plus",
+    title: "سجّل حسابك",
+    description: "ابدأ بإنشاء حساب جديد في ثوانٍ معدودة."
+  },
+  {
+    id: 2,
+    icon: "fas fa-list-ol",
+    title: "أنشئ فعالية أو مجموعة",
+    description: "أضف تفاصيل الفعالية أو المجموعة وحدد الألعاب أو المهام."
+  },
+  {
+    id: 3,
+    icon: "fas fa-balance-scale",
+    title: "وزّع تلقائياً",
+    description: "دع المنصة توزع الأدوار أو الألعاب تلقائياً بعدالة وسهولة."
+  },
+];
 
 const features = [
   {
@@ -93,11 +124,11 @@ const features = [
   },
   {
     id: 2,
-    icon: "fas fa-quiz",
+    icon: "fas fa-clipboard-check",
     iconColor: "text-accent",
     bgColor: "bg-accent/10",
-    title: "اختبارات ذكية",
-    description: "نظام اختبارات متطور مع تصحيح فوري وتقييم شامل للأداء"
+    title: "تنظيم ذكي",
+    description: "نظام توزيع متطور يضمن عدالة وفعالية في توزيع الألعاب أو المهام"
   },
   {
     id: 3,
@@ -129,6 +160,6 @@ const features = [
     iconColor: "text-blue-500",
     bgColor: "bg-blue-500/10",
     title: "بحث ذكي",
-    description: "محرك بحث متطور للعثور على المحتوى التعليمي بسهولة وسرعة"
+    description: "محرك بحث متطور للعثور على المحتوى أو الألعاب بسهولة وسرعة"
   }
 ];
