@@ -4,7 +4,7 @@
   "installCommand": "npm run install:all",
   "framework": "vite",
   "functions": {
-    "server/index.ts": {
+    "server/**": {
       "runtime": "nodejs18.x"
     }
   },
