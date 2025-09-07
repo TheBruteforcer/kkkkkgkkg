@@ -1,7 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, registerSchema, insertMaterialSchema, insertQuizSchema, insertQuizAttemptSchema, insertGradeSchema, insertGroupSchema } from "@shared/schema";
+import {
+  loginSchema,
+  registerSchema,
+  insertMaterialSchema,
+  insertQuizSchema,
+  insertQuizAttemptSchema,
+  insertGradeSchema,
+  insertGroupSchema,
+} from "@shared/schema";
 import type { User, Grade, Group } from "@shared/schema";
 
 declare module "express-session" {
@@ -24,17 +32,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.session.userId) {
       return res.status(401).json({ message: "يجب تسجيل الدخول أولاً" });
     }
-    
+
     const user = await storage.getUser(req.session.userId);
     if (!user || user.role !== "admin") {
       return res.status(403).json({ message: "غير مصرح لك بالوصول" });
     }
-    
+
     // Additional security check for admin actions
     if (!req.session.adminVerified) {
       return res.status(403).json({ message: "يجب تأكيد هوية المدير" });
     }
-    
+
     req.user = user;
     next();
   };
@@ -45,29 +53,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Registration attempt with data:", req.body);
       const userData = registerSchema.parse(req.body);
       console.log("Parsed data:", userData);
-      
+
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
-        return res.status(400).json({ message: "البريد الإلكتروني مستخدم من قبل" });
+        return res
+          .status(400)
+          .json({ message: "البريد الإلكتروني مستخدم من قبل" });
       }
 
       const user = await storage.createUser(userData);
       req.session.userId = user.id;
-      
+
       // Auto-verify admin if registering with admin role
       if (user.role === "admin") {
         req.session.adminVerified = true;
       }
-      
-      res.json({ 
-        user: { 
-          id: user.id, 
-          name: user.name, 
-          email: user.email, 
+
+      res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
           role: user.role,
           grade: user.grade,
-          group: user.group 
-        } 
+          group: user.group,
+        },
       });
     } catch (error) {
       console.error("Registration validation error:", error);
@@ -81,28 +91,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
-      
+
       const user = await storage.getUserByEmail(email);
       if (!user || user.password !== password) {
-        return res.status(401).json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
+        return res
+          .status(401)
+          .json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
       }
 
       req.session.userId = user.id;
-      
+
       // Auto-verify admin if logging in with admin credentials
       if (user.role === "admin") {
         req.session.adminVerified = true;
       }
-      
-      res.json({ 
-        user: { 
-          id: user.id, 
-          name: user.name, 
-          email: user.email, 
+
+      res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
           role: user.role,
           grade: user.grade,
-          group: user.group 
-        } 
+          group: user.group,
+        },
       });
     } catch (error) {
       res.status(400).json({ message: "بيانات غير صحيحة" });
@@ -120,11 +132,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { password } = req.body;
       const user = await storage.getUser(req.session.userId!);
-      
+
       if (!user || user.role !== "admin" || user.password !== password) {
         return res.status(401).json({ message: "كلمة مرور المدير غير صحيحة" });
       }
-      
+
       req.session.adminVerified = true;
       res.json({ message: "تم تأكيد هوية المدير بنجاح" });
     } catch (error) {
@@ -138,44 +150,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getAllUsers();
       const materials = await storage.getMaterials();
       const quizzes = await storage.getQuizzes();
-      
+
       // Get all quiz attempts for statistics
       const allAttempts: any[] = [];
       for (const quiz of quizzes) {
         const stats = await storage.getQuizStats(quiz.id);
-        allAttempts.push(...Array(stats.totalAttempts).fill(null).map((_, i) => ({
-          quizId: quiz.id,
-          score: stats.averageScore,
-          completedAt: new Date().toISOString()
-        })));
+        allAttempts.push(
+          ...Array(stats.totalAttempts)
+            .fill(null)
+            .map((_, i) => ({
+              quizId: quiz.id,
+              score: stats.averageScore,
+              completedAt: new Date().toISOString(),
+            })),
+        );
       }
-      
-      const totalStudents = users.filter((u: any) => u.role === "student").length;
+
+      const totalStudents = users.filter(
+        (u: any) => u.role === "student",
+      ).length;
       const totalMaterials = materials.length;
-      const activeQuizzes = quizzes.filter((q: any) => q.isActive && new Date(q.deadline) > new Date()).length;
-      const completedAttempts = allAttempts.filter((a: any) => a.completedAt).length;
-      const averageScore = completedAttempts.length > 0 
-        ? allAttempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0) / completedAttempts.length 
-        : 0;
-      
+      const activeQuizzes = quizzes.filter(
+        (q: any) => q.isActive && new Date(q.deadline) > new Date(),
+      ).length;
+      const completedAttemptsArr = allAttempts.filter(
+        (a: any) => a.completedAt,
+      );
+      const completedAttempts = completedAttemptsArr.length;
+      const averageScore =
+        completedAttempts > 0
+          ? completedAttemptsArr.reduce(
+              (sum: number, a: any) => sum + (a.score || 0),
+              0,
+            ) / completedAttempts
+          : 0;
+
       // Material breakdown
-      const whiteboardImages = materials.filter((m: any) => m.type === "whiteboard").length;
+      const whiteboardImages = materials.filter(
+        (m: any) => m.type === "whiteboard",
+      ).length;
       const videos = materials.filter((m: any) => m.type === "video").length;
-      const documents = materials.filter((m: any) => m.type === "document").length;
-      
+      const documents = materials.filter(
+        (m: any) => m.type === "document",
+      ).length;
+
       // Recent activity (last 5)
       const recentMaterials = materials.slice(0, 5);
       const recentQuizzes = quizzes.slice(0, 5);
       const recentAttempts = allAttempts.slice(0, 10);
-      
+
       // Grade and group analysis
       const gradeDistribution: Record<string, number> = {};
       const groupDistribution: Record<string, number> = {};
-      users.filter((u: any) => u.role === "student").forEach((user: any) => {
-        if (user.grade) gradeDistribution[user.grade] = (gradeDistribution[user.grade] || 0) + 1;
-        if (user.group) groupDistribution[user.group] = (groupDistribution[user.group] || 0) + 1;
-      });
-      
+      users
+        .filter((u: any) => u.role === "student")
+        .forEach((user: any) => {
+          if (user.grade)
+            gradeDistribution[user.grade] =
+              (gradeDistribution[user.grade] || 0) + 1;
+          if (user.group)
+            groupDistribution[user.group] =
+              (groupDistribution[user.group] || 0) + 1;
+        });
+
       res.json({
         stats: {
           totalStudents,
@@ -186,16 +223,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           materialBreakdown: {
             whiteboard: whiteboardImages,
             video: videos,
-            document: documents
+            document: documents,
           },
           gradeDistribution,
-          groupDistribution
+          groupDistribution,
         },
         recentActivity: {
           materials: recentMaterials,
           quizzes: recentQuizzes,
-          attempts: recentAttempts
-        }
+          attempts: recentAttempts,
+        },
       });
     } catch (error) {
       res.status(500).json({ message: "خطأ في جلب الإحصائيات" });
@@ -218,21 +255,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.session.userId) {
       return res.status(401).json({ message: "غير مسجل الدخول" });
     }
-    
+
     const user = await storage.getUser(req.session.userId);
     if (!user) {
       return res.status(404).json({ message: "المستخدم غير موجود" });
     }
-    
-    res.json({ 
-      user: { 
-        id: user.id, 
-        name: user.name, 
-        email: user.email, 
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
         role: user.role,
         grade: user.grade,
-        group: user.group 
-      } 
+        group: user.group,
+      },
     });
   });
 
@@ -248,9 +285,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user.role === "admin") {
         materials = await storage.getMaterials();
       } else {
-        materials = await storage.getMaterials(user.grade || undefined, user.group || undefined);
+        materials = await storage.getMaterials(
+          user.grade || undefined,
+          user.group || undefined,
+        );
       }
-      
+
       res.json({ materials });
     } catch (error) {
       res.status(500).json({ message: "خطأ في الخادم" });
@@ -272,11 +312,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       const material = await storage.updateMaterial(id, updates);
-      
+
       if (!material) {
         return res.status(404).json({ message: "المادة غير موجودة" });
       }
-      
+
       res.json({ material });
     } catch (error) {
       res.status(400).json({ message: "بيانات غير صحيحة" });
@@ -287,11 +327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteMaterial(id);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "المادة غير موجودة" });
       }
-      
+
       res.json({ message: "تم حذف المادة بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "خطأ في الخادم" });
@@ -310,9 +350,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user.role === "admin") {
         quizzes = await storage.getQuizzes();
       } else {
-        quizzes = await storage.getQuizzes(user.grade || undefined, user.group || undefined);
+        quizzes = await storage.getQuizzes(
+          user.grade || undefined,
+          user.group || undefined,
+        );
       }
-      
+
       res.json({ quizzes });
     } catch (error) {
       res.status(500).json({ message: "خطأ في الخادم" });
@@ -323,11 +366,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const quiz = await storage.getQuiz(id);
-      
+
       if (!quiz) {
         return res.status(404).json({ message: "الاختبار غير موجود" });
       }
-      
+
       res.json({ quiz });
     } catch (error) {
       res.status(500).json({ message: "خطأ في الخادم" });
@@ -337,13 +380,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/quizzes", requireAdmin, async (req, res) => {
     try {
       console.log("Received quiz data:", req.body);
-      
+
       // Convert deadline string to Date object
       const requestData = {
         ...req.body,
-        deadline: new Date(req.body.deadline)
+        deadline: new Date(req.body.deadline),
       };
-      
+
       const quizData = insertQuizSchema.parse(requestData);
       console.log("Validated quiz data:", quizData);
       const quiz = await storage.createQuiz(quizData);
@@ -363,11 +406,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       const quiz = await storage.updateQuiz(id, updates);
-      
+
       if (!quiz) {
         return res.status(404).json({ message: "الاختبار غير موجود" });
       }
-      
+
       res.json({ quiz });
     } catch (error) {
       res.status(400).json({ message: "بيانات غير صحيحة" });
@@ -378,11 +421,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteQuiz(id);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "الاختبار غير موجود" });
       }
-      
+
       res.json({ message: "تم حذف الاختبار بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "خطأ في الخادم" });
@@ -404,8 +447,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { quizId } = req.query;
       const attempts = await storage.getQuizAttempts(
-        req.session.userId!, 
-        quizId as string | undefined
+        req.session.userId!,
+        quizId as string | undefined,
       );
       res.json({ attempts });
     } catch (error) {
@@ -414,33 +457,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/quiz-attempts", requireAuth, async (req, res) => {
+    console.log("=== STARTING QUIZ ATTEMPT CREATION ===");
     try {
-      const attemptData = insertQuizAttemptSchema.parse({
+      console.log("Received quiz attempt data:", req.body);
+      console.log("User ID from session:", req.session.userId);
+      console.log("Session details:", {
+        userId: req.session.userId,
+        sessionId: req.sessionID,
+        cookie: req.session.cookie,
+      });
+
+      if (!req.session.userId) {
+        console.error("ERROR: No user ID in session");
+        return res.status(401).json({ message: "يجب تسجيل الدخول أولاً" });
+      }
+
+      const rawData = {
         ...req.body,
         userId: req.session.userId,
+      };
+
+      console.log("Raw data to validate:", rawData);
+
+      const result = insertQuizAttemptSchema.safeParse(rawData);
+      console.log("Validation result:", result);
+
+      if (!result.success) {
+        console.error("Validation errors:", result.error.issues);
+        return res.status(400).json({
+          message: "بيانات غير صحيحة",
+          errors: result.error.issues,
+        });
+      }
+
+      console.log("Parsed attempt data:", result.data);
+      console.log("User ID in result.data for creation:", result.data.userId);
+      const attempt = await storage.createQuizAttempt(result.data);
+      console.log("Created attempt details:", {
+        id: attempt.id,
+        userId: attempt.userId,
+        quizId: attempt.quizId,
+        attemptNumber: attempt.attemptNumber,
       });
-      
-      const attempt = await storage.createQuizAttempt(attemptData);
       res.json({ attempt });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Quiz attempt creation error:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       res.status(400).json({ message: "بيانات غير صحيحة" });
     }
+    console.log("=== FINISHED QUIZ ATTEMPT CREATION ===");
   });
 
   app.put("/api/quiz-attempts/:id", requireAuth, async (req, res) => {
+    console.log("=== PUT /api/quiz-attempts/:id DEBUG ===");
+    console.log("Attempt ID:", req.params.id);
+    console.log("Session User ID:", req.session.userId);
+    console.log("Request body:", JSON.stringify(req.body, null, 2));
+
     try {
       const { id } = req.params;
       const updates = req.body;
-      
+
+      console.log("Attempting to get quiz attempt with ID:", id);
       const existingAttempt = await storage.getQuizAttempt(id);
-      if (!existingAttempt || existingAttempt.userId !== req.session.userId) {
-        return res.status(404).json({ message: "المحاولة غير موجودة" });
+      console.log(
+        "Retrieved existing attempt:",
+        existingAttempt
+          ? {
+              id: existingAttempt.id,
+              userId: existingAttempt.userId,
+              quizId: existingAttempt.quizId,
+              attemptNumber: existingAttempt.attemptNumber,
+            }
+          : null,
+      );
+
+      console.log(
+        "User ID comparison - Existing attempt userId:",
+        existingAttempt?.userId,
+        "Session userId:",
+        req.session.userId,
+        "Match:",
+        existingAttempt?.userId === req.session.userId,
+      );
+
+      if (!existingAttempt) {
+        console.log("ERROR: Attempt not found in database");
+        return res.status(404).json({
+          message: "المحاولة غير موجودة - لم يتم العثور على المحاولة",
+        });
       }
-      
+
+      if (existingAttempt.userId !== req.session.userId) {
+        console.log("ERROR: User ID mismatch");
+        return res
+          .status(404)
+          .json({ message: "المحاولة غير موجودة - عدم تطابق المستخدم" });
+      }
+
+      console.log("Updating quiz attempt with data:", updates);
       const attempt = await storage.updateQuizAttempt(id, updates);
+      console.log("Update successful:", attempt ? "YES" : "NO");
+
       res.json({ attempt });
     } catch (error) {
+      console.error("Error in PUT /api/quiz-attempts/:id:", error);
       res.status(400).json({ message: "بيانات غير صحيحة" });
+    }
+    console.log("=== END PUT /api/quiz-attempts/:id DEBUG ===");
+  });
+
+  // Debug endpoint to check quiz attempt existence
+  app.get("/api/quiz-attempts/:id/debug", requireAuth, async (req, res) => {
+    console.log("=== DEBUG ENDPOINT ===");
+    console.log("Attempt ID:", req.params.id);
+    console.log("Session User ID:", req.session.userId);
+
+    try {
+      const { id } = req.params;
+      const attempt = await storage.getQuizAttempt(id);
+
+      console.log(
+        "Found attempt:",
+        attempt
+          ? {
+              id: attempt.id,
+              userId: attempt.userId,
+              quizId: attempt.quizId,
+              attemptNumber: attempt.attemptNumber,
+              startedAt: attempt.startedAt,
+              completedAt: attempt.completedAt,
+            }
+          : null,
+      );
+
+      res.json({
+        attemptExists: !!attempt,
+        sessionUserId: req.session.userId,
+        attemptUserId: attempt?.userId,
+        userMatch: attempt?.userId === req.session.userId,
+        attempt: attempt
+          ? {
+              id: attempt.id,
+              userId: attempt.userId,
+              quizId: attempt.quizId,
+              attemptNumber: attempt.attemptNumber,
+              startedAt: attempt.startedAt,
+              completedAt: attempt.completedAt,
+            }
+          : null,
+      });
+    } catch (error) {
+      console.error("Debug endpoint error:", error);
+      res.status(500).json({ error: error.message });
     }
   });
 
@@ -544,11 +716,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       const user = await storage.updateUser(id, updates);
-      
+
       if (!user) {
         return res.status(404).json({ message: "المستخدم غير موجود" });
       }
-      
+
       // Remove password from response for security
       const { password, ...safeUser } = user;
       res.json({ user: safeUser });
@@ -575,18 +747,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/quiz-attempts/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      
+
       // Check if the attempt belongs to the current user
       const attempt = await storage.getQuizAttempt(id);
       if (!attempt || attempt.userId !== req.session.userId) {
         return res.status(404).json({ message: "المحاولة غير موجودة" });
       }
-      
+
       const success = await storage.deleteQuizAttempt(id);
       if (!success) {
         return res.status(404).json({ message: "المحاولة غير موجودة" });
       }
-      
+
       res.json({ message: "تم حذف المحاولة بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "خطأ في حذف المحاولة" });

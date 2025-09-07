@@ -1,18 +1,32 @@
-import { createClient } from '@supabase/supabase-js';
-import type { User, InsertUser, Material, InsertMaterial, Quiz, InsertQuiz, QuizAttempt, InsertQuizAttempt, Grade, InsertGrade, Group, InsertGroup } from "@shared/schema";
+import { createClient } from "@supabase/supabase-js";
+import type {
+  User,
+  InsertUser,
+  Material,
+  InsertMaterial,
+  Quiz,
+  InsertQuiz,
+  QuizAttempt,
+  InsertQuizAttempt,
+  Grade,
+  InsertGrade,
+  Group,
+  InsertGroup,
+} from "@shared/schema";
 import type { IStorage } from "./storage";
 
-const supabaseUrl = 'https://ummtbgcqyrerenzbhshx.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbXRiZ2NxeXJlcmVuemJoc2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxMjc3NzYsImV4cCI6MjA3MjcwMzc3Nn0.azkJ1IyoREbZIKqO7kFk0Lb0zKwB8OTpx5iAjNlMVbA';
+const supabaseUrl = "https://ummtbgcqyrerenzbhshx.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbXRiZ2NxeXJlcmVuemJoc2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxMjc3NzYsImV4cCI6MjA3MjcwMzc3Nn0.azkJ1IyoREbZIKqO7kFk0Lb0zKwB8OTpx5iAjNlMVbA";
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export class SupabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
+      .from("users")
+      .select("*")
+      .eq("id", id)
       .single();
     if (error || !data) return undefined;
     return data as User;
@@ -20,9 +34,9 @@ export class SupabaseStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
+      .from("users")
+      .select("*")
+      .eq("email", email)
       .single();
     if (error || !data) return undefined;
     return data as User;
@@ -30,19 +44,23 @@ export class SupabaseStorage implements IStorage {
 
   async createUser(user: InsertUser): Promise<User> {
     const { data, error } = await supabase
-      .from('users')
+      .from("users")
       .insert([user])
       .select()
       .single();
-    if (error || !data) throw new Error(error?.message || 'Failed to create user');
+    if (error || !data)
+      throw new Error(error?.message || "Failed to create user");
     return data as User;
   }
 
-  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+  async updateUser(
+    id: string,
+    updates: Partial<User>,
+  ): Promise<User | undefined> {
     const { data, error } = await supabase
-      .from('users')
+      .from("users")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
     if (error || !data) return undefined;
@@ -51,25 +69,27 @@ export class SupabaseStorage implements IStorage {
 
   // Material operations
   async getMaterials(grade?: string, group?: string): Promise<Material[]> {
-    let query = supabase.from('materials').select('*');
-    
+    let query = supabase.from("materials").select("*");
+
     if (grade) {
-      query = query.eq('grade', grade);
+      query = query.eq("grade", grade);
     }
     if (group) {
-      query = query.eq('group', group);
+      query = query.eq("group", group);
     }
-    
-    const { data, error } = await query.order('created_at', { ascending: false });
+
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
+    });
     if (error) return [];
     return data as Material[];
   }
 
   async getMaterial(id: string): Promise<Material | undefined> {
     const { data, error } = await supabase
-      .from('materials')
-      .select('*')
-      .eq('id', id)
+      .from("materials")
+      .select("*")
+      .eq("id", id)
       .single();
     if (error || !data) return undefined;
     return data as Material;
@@ -77,19 +97,23 @@ export class SupabaseStorage implements IStorage {
 
   async createMaterial(insertMaterial: InsertMaterial): Promise<Material> {
     const { data, error } = await supabase
-      .from('materials')
+      .from("materials")
       .insert([insertMaterial])
       .select()
       .single();
-    if (error || !data) throw new Error(error?.message || 'Failed to create material');
+    if (error || !data)
+      throw new Error(error?.message || "Failed to create material");
     return data as Material;
   }
 
-  async updateMaterial(id: string, updates: Partial<Material>): Promise<Material | undefined> {
+  async updateMaterial(
+    id: string,
+    updates: Partial<Material>,
+  ): Promise<Material | undefined> {
     const { data, error } = await supabase
-      .from('materials')
+      .from("materials")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
     if (error || !data) return undefined;
@@ -97,34 +121,33 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteMaterial(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('materials')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("materials").delete().eq("id", id);
     return !error;
   }
 
   // Quiz operations
   async getQuizzes(grade?: string, group?: string): Promise<Quiz[]> {
-    let query = supabase.from('quizzes').select('*');
-    
+    let query = supabase.from("quizzes").select("*");
+
     if (grade) {
-      query = query.eq('grade', grade);
+      query = query.eq("grade", grade);
     }
     if (group) {
-      query = query.eq('group', group);
+      query = query.eq("group", group);
     }
-    
-    const { data, error } = await query.order('created_at', { ascending: false });
+
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
+    });
     if (error) return [];
     return data as Quiz[];
   }
 
   async getQuiz(id: string): Promise<Quiz | undefined> {
     const { data, error } = await supabase
-      .from('quizzes')
-      .select('*')
-      .eq('id', id)
+      .from("quizzes")
+      .select("*")
+      .eq("id", id)
       .single();
     if (error || !data) return undefined;
     return data as Quiz;
@@ -148,21 +171,24 @@ export class SupabaseStorage implements IStorage {
     }
 
     const { data, error } = await supabase // Use the shared client
-      .from('quizzes')
+      .from("quizzes")
       .insert([supabaseQuizData])
       .select()
       .single();
     if (error || !data) {
-      throw new Error(error?.message || 'Failed to create quiz');
+      throw new Error(error?.message || "Failed to create quiz");
     }
     return data as Quiz;
   }
 
-  async updateQuiz(id: string, updates: Partial<Quiz>): Promise<Quiz | undefined> {
+  async updateQuiz(
+    id: string,
+    updates: Partial<Quiz>,
+  ): Promise<Quiz | undefined> {
     const { data, error } = await supabase
-      .from('quizzes')
+      .from("quizzes")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
     if (error || !data) return undefined;
@@ -170,51 +196,135 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteQuiz(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('quizzes')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("quizzes").delete().eq("id", id);
     return !error;
   }
 
   // Quiz attempt operations
-  async getQuizAttempts(userId: string, quizId?: string): Promise<QuizAttempt[]> {
-    let query = supabase.from('quiz_attempts').select('*').eq('user_id', userId);
-    
+  async getQuizAttempts(
+    userId: string,
+    quizId?: string,
+  ): Promise<QuizAttempt[]> {
+    let query = supabase
+      .from("quiz_attempts")
+      .select("*")
+      .eq("user_id", userId);
+
     if (quizId) {
-      query = query.eq('quiz_id', quizId);
+      query = query.eq("quiz_id", quizId);
     }
-    
-    const { data, error } = await query.order('started_at', { ascending: false });
+
+    const { data, error } = await query.order("started_at", {
+      ascending: false,
+    });
     if (error) return [];
     return data as QuizAttempt[];
   }
 
   async getQuizAttempt(id: string): Promise<QuizAttempt | undefined> {
+    console.log("=== getQuizAttempt DEBUG ===");
+    console.log("Searching for quiz attempt with ID:", id);
+
     const { data, error } = await supabase
-      .from('quiz_attempts')
-      .select('*')
-      .eq('id', id)
+      .from("quiz_attempts")
+      .select("*")
+      .eq("id", id)
       .single();
-    if (error || !data) return undefined;
+
+    console.log("Supabase query result:");
+    console.log("- Error:", error);
+    console.log("- Data:", data);
+
+    if (error) {
+      console.log(
+        "Database error details:",
+        error.message,
+        error.details,
+        error.hint,
+      );
+    }
+
+    if (error || !data) {
+      console.log("Returning undefined - no quiz attempt found");
+      return undefined;
+    }
+
+    console.log("Successfully found quiz attempt, returning:", data);
     return data as QuizAttempt;
   }
 
-  async createQuizAttempt(insertAttempt: InsertQuizAttempt): Promise<QuizAttempt> {
+  async createQuizAttempt(
+    insertAttempt: InsertQuizAttempt,
+  ): Promise<QuizAttempt> {
+    // Manually map camelCase to snake_case for Supabase
+    const {
+      userId,
+      quizId,
+      totalQuestions,
+      attemptNumber,
+      completedAt,
+      ...rest
+    } = insertAttempt;
+
+    const supabaseAttemptData: any = {
+      ...rest,
+      user_id: userId,
+      quiz_id: quizId,
+      total_questions: totalQuestions,
+      attempt_number: attemptNumber,
+    };
+
+    if (completedAt !== undefined) {
+      supabaseAttemptData.completed_at = completedAt;
+    }
+
     const { data, error } = await supabase
-      .from('quiz_attempts')
-      .insert([insertAttempt])
+      .from("quiz_attempts")
+      .insert([supabaseAttemptData])
       .select()
       .single();
-    if (error || !data) throw new Error(error?.message || 'Failed to create quiz attempt');
+    if (error || !data)
+      throw new Error(error?.message || "Failed to create quiz attempt");
     return data as QuizAttempt;
   }
 
-  async updateQuizAttempt(id: string, updates: Partial<QuizAttempt>): Promise<QuizAttempt | undefined> {
+  async updateQuizAttempt(
+    id: string,
+    updates: Partial<QuizAttempt>,
+  ): Promise<QuizAttempt | undefined> {
+    // Manually map camelCase to snake_case for Supabase
+    const supabaseUpdateData: any = {};
+
+    // Map fields that need renaming
+    if (updates.userId !== undefined) {
+      supabaseUpdateData.user_id = updates.userId;
+    }
+    if (updates.quizId !== undefined) {
+      supabaseUpdateData.quiz_id = updates.quizId;
+    }
+    if (updates.totalQuestions !== undefined) {
+      supabaseUpdateData.total_questions = updates.totalQuestions;
+    }
+    if (updates.attemptNumber !== undefined) {
+      supabaseUpdateData.attempt_number = updates.attemptNumber;
+    }
+    if (updates.completedAt !== undefined) {
+      supabaseUpdateData.completed_at = updates.completedAt;
+    }
+    if (updates.startedAt !== undefined) {
+      supabaseUpdateData.started_at = updates.startedAt;
+    }
+    if (updates.answers !== undefined) {
+      supabaseUpdateData.answers = updates.answers;
+    }
+    if (updates.score !== undefined) {
+      supabaseUpdateData.score = updates.score;
+    }
+
     const { data, error } = await supabase
-      .from('quiz_attempts')
-      .update(updates)
-      .eq('id', id)
+      .from("quiz_attempts")
+      .update(supabaseUpdateData)
+      .eq("id", id)
       .select()
       .single();
     if (error || !data) return undefined;
@@ -228,32 +338,41 @@ export class SupabaseStorage implements IStorage {
     topScores: { userId: string; userName: string; score: number }[];
   }> {
     const { data: attempts, error } = await supabase
-      .from('quiz_attempts')
-      .select(`
+      .from("quiz_attempts")
+      .select(
+        `
         *,
         users:user_id (
           name
         )
-      `)
-      .eq('quiz_id', quizId);
-    
+      `,
+      )
+      .eq("quiz_id", quizId);
+
     if (error || !attempts) {
       return {
         totalAttempts: 0,
         averageScore: 0,
         completionRate: 0,
-        topScores: []
+        topScores: [],
       };
     }
 
-    const completedAttempts = attempts.filter((a: any) => a.completed_at && a.score !== null);
-    
+    const completedAttempts = attempts.filter(
+      (a: any) => a.completed_at && a.score !== null,
+    );
+
     const totalAttempts = attempts.length;
-    const averageScore = completedAttempts.length > 0 
-      ? completedAttempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0) / completedAttempts.length
-      : 0;
-    const completionRate = totalAttempts > 0 ? (completedAttempts.length / totalAttempts) * 100 : 0;
-    
+    const averageScore =
+      completedAttempts.length > 0
+        ? completedAttempts.reduce(
+            (sum: number, a: any) => sum + (a.score || 0),
+            0,
+          ) / completedAttempts.length
+        : 0;
+    const completionRate =
+      totalAttempts > 0 ? (completedAttempts.length / totalAttempts) * 100 : 0;
+
     const topScores = completedAttempts
       .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
       .slice(0, 10)
@@ -274,18 +393,18 @@ export class SupabaseStorage implements IStorage {
   // Grade operations
   async getGrades(): Promise<Grade[]> {
     const { data, error } = await supabase
-      .from('grades')
-      .select('*')
-      .order('created_at', { ascending: true });
+      .from("grades")
+      .select("*")
+      .order("created_at", { ascending: true });
     if (error) return [];
     return data as Grade[];
   }
 
   async getGrade(id: string): Promise<Grade | undefined> {
     const { data, error } = await supabase
-      .from('grades')
-      .select('*')
-      .eq('id', id)
+      .from("grades")
+      .select("*")
+      .eq("id", id)
       .single();
     if (error || !data) return undefined;
     return data as Grade;
@@ -293,19 +412,23 @@ export class SupabaseStorage implements IStorage {
 
   async createGrade(insertGrade: InsertGrade): Promise<Grade> {
     const { data, error } = await supabase
-      .from('grades')
+      .from("grades")
       .insert([insertGrade])
       .select()
       .single();
-    if (error || !data) throw new Error(error?.message || 'Failed to create grade');
+    if (error || !data)
+      throw new Error(error?.message || "Failed to create grade");
     return data as Grade;
   }
 
-  async updateGrade(id: string, updates: Partial<Grade>): Promise<Grade | undefined> {
+  async updateGrade(
+    id: string,
+    updates: Partial<Grade>,
+  ): Promise<Grade | undefined> {
     const { data, error } = await supabase
-      .from('grades')
+      .from("grades")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
     if (error || !data) return undefined;
@@ -313,28 +436,25 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteGrade(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('grades')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("grades").delete().eq("id", id);
     return !error;
   }
 
   // Group operations
   async getGroups(): Promise<Group[]> {
     const { data, error } = await supabase
-      .from('groups')
-      .select('*')
-      .order('created_at', { ascending: true });
+      .from("groups")
+      .select("*")
+      .order("created_at", { ascending: true });
     if (error) return [];
     return data as Group[];
   }
 
   async getGroup(id: string): Promise<Group | undefined> {
     const { data, error } = await supabase
-      .from('groups')
-      .select('*')
-      .eq('id', id)
+      .from("groups")
+      .select("*")
+      .eq("id", id)
       .single();
     if (error || !data) return undefined;
     return data as Group;
@@ -342,19 +462,23 @@ export class SupabaseStorage implements IStorage {
 
   async createGroup(insertGroup: InsertGroup): Promise<Group> {
     const { data, error } = await supabase
-      .from('groups')
+      .from("groups")
       .insert([insertGroup])
       .select()
       .single();
-    if (error || !data) throw new Error(error?.message || 'Failed to create group');
+    if (error || !data)
+      throw new Error(error?.message || "Failed to create group");
     return data as Group;
   }
 
-  async updateGroup(id: string, updates: Partial<Group>): Promise<Group | undefined> {
+  async updateGroup(
+    id: string,
+    updates: Partial<Group>,
+  ): Promise<Group | undefined> {
     const { data, error } = await supabase
-      .from('groups')
+      .from("groups")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
     if (error || !data) return undefined;
@@ -362,37 +486,31 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteGroup(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('groups')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("groups").delete().eq("id", id);
     return !error;
   }
 
   // Additional methods for admin functionality
   async getAllUsers(): Promise<User[]> {
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("users")
+      .select("*")
+      .order("created_at", { ascending: false });
     if (error) return [];
     return data as User[];
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("users").delete().eq("id", id);
     return !error;
   }
 
   // Additional methods for quiz attempts
   async deleteQuizAttempt(id: string): Promise<boolean> {
     const { error } = await supabase
-      .from('quiz_attempts')
+      .from("quiz_attempts")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
     return !error;
   }
 }
