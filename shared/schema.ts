@@ -89,6 +89,9 @@ export const insertQuizSchema = createInsertSchema(quizzes).omit({
 export const insertQuizAttemptSchema = createInsertSchema(quizAttempts).omit({
   id: true,
   startedAt: true,
+}).extend({
+  answers: z.record(z.string(), z.string()),
+  completedAt: z.string().optional().nullable(),
 });
 
 export const insertGradeSchema = createInsertSchema(grades).omit({

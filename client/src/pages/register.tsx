@@ -256,9 +256,5 @@ function RegisterPageContent() {
 }
 
 export default function RegisterPage() {
-  return (
-    <AuthGuard redirectTo="/">
-      <RegisterPageContent />
-    </AuthGuard>
-  );
+  return <RegisterPageContent />;
 }

@@ -19,7 +19,8 @@ export default function AuthGuard({
   const { data: currentUser, isLoading } = useCurrentUser();
 
   useEffect(() => {
-    if (isLoading) return; // Still loading, don't redirect yet
+    // Only run redirect logic when we have the user data
+    if (isLoading) return;
 
     if (requireAuth && !currentUser?.user) {
       setLocation("/login");
@@ -40,7 +41,9 @@ export default function AuthGuard({
     }
   }, [currentUser, isLoading, requireAuth, requireAdmin, redirectTo, setLocation]);
 
+  // Show loading only briefly, then let the route render
   if (isLoading) {
+    // Add a small delay to prevent flickering
     return (
       <div className="min-h-screen bg-muted/20 flex items-center justify-center">
         <div className="text-center">
@@ -68,7 +71,9 @@ export function useAuthRouting() {
   const { data: currentUser, isLoading } = useCurrentUser();
 
   useEffect(() => {
-    if (isLoading || !currentUser?.user) return;
+    // Only redirect when we have user data and they're authenticated
+    if (isLoading) return;
+    if (!currentUser?.user) return;
 
     // If user is authenticated, redirect to appropriate dashboard
     if (currentUser.user.role === "admin") {

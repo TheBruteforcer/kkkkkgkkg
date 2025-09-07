@@ -218,7 +218,19 @@ export class SupabaseStorage implements IStorage {
       ascending: false,
     });
     if (error) return [];
-    return data as QuizAttempt[];
+
+    // Map snake_case fields from Supabase to camelCase for TypeScript
+    return data.map((attempt: any) => ({
+      id: attempt.id,
+      userId: attempt.user_id,
+      quizId: attempt.quiz_id,
+      answers: attempt.answers,
+      score: attempt.score,
+      totalQuestions: attempt.total_questions,
+      startedAt: attempt.started_at,
+      completedAt: attempt.completed_at,
+      attemptNumber: attempt.attempt_number,
+    })) as QuizAttempt[];
   }
 
   async getQuizAttempt(id: string): Promise<QuizAttempt | undefined> {
@@ -250,7 +262,22 @@ export class SupabaseStorage implements IStorage {
     }
 
     console.log("Successfully found quiz attempt, returning:", data);
-    return data as QuizAttempt;
+
+    // Map snake_case fields from Supabase to camelCase for TypeScript
+    const mappedAttempt = {
+      id: data.id,
+      userId: data.user_id,
+      quizId: data.quiz_id,
+      answers: data.answers,
+      score: data.score,
+      totalQuestions: data.total_questions,
+      startedAt: data.started_at,
+      completedAt: data.completed_at,
+      attemptNumber: data.attempt_number,
+    };
+
+    console.log("Mapped attempt data:", mappedAttempt);
+    return mappedAttempt as QuizAttempt;
   }
 
   async createQuizAttempt(
@@ -285,7 +312,21 @@ export class SupabaseStorage implements IStorage {
       .single();
     if (error || !data)
       throw new Error(error?.message || "Failed to create quiz attempt");
-    return data as QuizAttempt;
+
+    // Map snake_case fields from Supabase to camelCase for TypeScript
+    const mappedAttempt = {
+      id: data.id,
+      userId: data.user_id,
+      quizId: data.quiz_id,
+      answers: data.answers,
+      score: data.score,
+      totalQuestions: data.total_questions,
+      startedAt: data.started_at,
+      completedAt: data.completed_at,
+      attemptNumber: data.attempt_number,
+    };
+
+    return mappedAttempt as QuizAttempt;
   }
 
   async updateQuizAttempt(
@@ -328,7 +369,21 @@ export class SupabaseStorage implements IStorage {
       .select()
       .single();
     if (error || !data) return undefined;
-    return data as QuizAttempt;
+
+    // Map snake_case fields from Supabase to camelCase for TypeScript
+    const mappedAttempt = {
+      id: data.id,
+      userId: data.user_id,
+      quizId: data.quiz_id,
+      answers: data.answers,
+      score: data.score,
+      totalQuestions: data.total_questions,
+      startedAt: data.started_at,
+      completedAt: data.completed_at,
+      attemptNumber: data.attempt_number,
+    };
+
+    return mappedAttempt as QuizAttempt;
   }
 
   async getQuizStats(quizId: string): Promise<{

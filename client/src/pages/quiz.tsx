@@ -17,7 +17,7 @@ export default function QuizPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser();
-  
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
@@ -35,46 +35,185 @@ export default function QuizPage() {
     enabled: !!id && !!currentUser?.user,
   });
 
+  const { data: attemptsData } = useQuery<{ attempts: QuizAttempt[] }>({
+    queryKey: [`/api/quiz-attempts?quizId=${id}`],
+    enabled: !!id && !!currentUser?.user,
+  });
+
   const startQuizMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/quiz-attempts", {
+      console.log("=== STARTING QUIZ ATTEMPT CREATION ===");
+      const attemptNumber = (attemptsData?.attempts?.length || 0) + 1;
+      const payload = {
         quizId: id,
-        answers: {},
-        totalQuestions: Array.isArray(quizData?.quiz.questions) ? quizData.quiz.questions.length : 0,
-        attemptNumber: 1,
-      });
-      return response.json();
+        answers: {} as Record<string, string>,
+        totalQuestions: Array.isArray(quizData?.quiz.questions)
+          ? Math.max(0, quizData.quiz.questions.length)
+          : 0,
+        attemptNumber: Math.max(1, attemptNumber),
+      };
+      console.log("Quiz attempt payload:", payload);
+      console.log("Current user session:", currentUser?.user);
+
+      try {
+        const response = await apiRequest(
+          "POST",
+          "/api/quiz-attempts",
+          payload,
+        );
+        const result = await response.json();
+        console.log("Quiz attempt creation successful:", result);
+        return result;
+      } catch (error) {
+        console.error("Quiz attempt creation failed:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("Quiz attempt creation successful:", data);
+      console.log("Setting attempt ID:", data.attempt.id);
+      console.log("User who created attempt:", data.attempt.userId);
+      console.log("Current session user:", currentUser?.user?.id);
       setAttemptId(data.attempt.id);
       setTimeRemaining((quizData?.quiz.duration || 0) * 60); // Convert to seconds
+    },
+    onError: (error) => {
+      console.error("Quiz attempt mutation error:", error);
+      toast({
+        title: "خطأ في بدء الاختبار",
+        description:
+          error instanceof Error ? error.message : "حدث خطأ غير متوقع",
+        variant: "destructive",
+      });
     },
   });
 
   const submitQuizMutation = useMutation({
     mutationFn: async () => {
       if (!attemptId) throw new Error("No attempt ID");
-      
+
+      console.log("=== QUIZ SUBMISSION DEBUG ===");
+      console.log("Attempt ID:", attemptId);
+      console.log("Current User:", currentUser);
+      console.log("Current User ID:", currentUser?.user?.id);
+      console.log("Answers:", answers);
+
+      // Check session consistency
+      console.log(
+        "Session check - User ID from context:",
+        currentUser?.user?.id,
+      );
+
+      // Refresh session before submission to ensure it's valid
+      try {
+        console.log("Refreshing session...");
+        const sessionResponse = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+        if (!sessionResponse.ok) {
+          throw new Error("Session invalid - redirecting to login");
+        }
+        const sessionData = await sessionResponse.json();
+        console.log("Session refresh result:", sessionData);
+
+        if (
+          !sessionData.user ||
+          sessionData.user.id !== currentUser?.user?.id
+        ) {
+          console.error("Session user mismatch after refresh:", {
+            sessionUser: sessionData.user?.id,
+            contextUser: currentUser?.user?.id,
+          });
+          throw new Error("Session mismatch detected");
+        }
+      } catch (sessionError) {
+        console.error("Session validation failed:", sessionError);
+        toast({
+          title: "انتهت جلسة العمل",
+          description: "يرجى تسجيل الدخول مرة أخرى",
+          variant: "destructive",
+        });
+        setLocation("/login");
+        return;
+      }
+
+      // Debug: Check if attempt exists before submitting
+      try {
+        console.log("Checking if attempt exists...");
+        const debugResponse = await fetch(
+          `/api/quiz-attempts/${attemptId}/debug`,
+          {
+            credentials: "include",
+          },
+        );
+        const debugData = await debugResponse.json();
+        console.log("Debug endpoint response:", debugData);
+        console.log("SESSION MISMATCH DETECTED:", {
+          sessionUserId: debugData.sessionUserId,
+          currentUserId: currentUser?.user?.id,
+          attemptUserId: debugData.attemptUserId,
+          sessionMatch: debugData.sessionUserId === currentUser?.user?.id,
+          attemptMatch: debugData.attemptUserId === currentUser?.user?.id,
+        });
+      } catch (debugError) {
+        console.error("Debug endpoint failed:", debugError);
+      }
+
       // Calculate score
-      const questions = Array.isArray(quizData?.quiz.questions) ? quizData.quiz.questions : [];
+      const questions = Array.isArray(quizData?.quiz.questions)
+        ? quizData.quiz.questions
+        : [];
       let score = 0;
-      
+
       questions.forEach((question: any, index: number) => {
         const questionId = `q${index}`;
         const userAnswer = answers[questionId];
         const correctAnswer = question.correctAnswer;
-        
-        if (userAnswer === correctAnswer) {
-          score++;
+
+        console.log(`Question ${index}:`, {
+          type: question.type,
+          userAnswer,
+          correctAnswer,
+          match: userAnswer === correctAnswer,
+        });
+
+        // For true/false questions, handle Arabic text comparison
+        if (question.type === "true-false") {
+          if (userAnswer === correctAnswer) {
+            score++;
+          }
+        } else {
+          // For multiple choice, compare letters (a, b, c, d)
+          if (userAnswer === correctAnswer) {
+            score++;
+          }
         }
       });
 
-      const response = await apiRequest("PUT", `/api/quiz-attempts/${attemptId}`, {
+      const payload = {
         answers,
         score,
         completedAt: new Date().toISOString(),
-      });
-      return response.json();
+      };
+
+      console.log("Final score:", score);
+      console.log("Submission payload:", payload);
+      console.log("Request URL:", `/api/quiz-attempts/${attemptId}`);
+
+      try {
+        const response = await apiRequest(
+          "PUT",
+          `/api/quiz-attempts/${attemptId}`,
+          payload,
+        );
+
+        console.log("Quiz submission successful");
+        return response.json();
+      } catch (error) {
+        console.error("Quiz submission failed:", error);
+        // Re-throw the error to be handled by the mutation's onError
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -89,7 +228,7 @@ export default function QuizPage() {
   // Timer countdown
   useEffect(() => {
     if (timeRemaining === null || timeRemaining <= 0) return;
-    
+
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev && prev <= 1) {
@@ -100,7 +239,7 @@ export default function QuizPage() {
         return prev ? prev - 1 : 0;
       });
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, [timeRemaining, submitQuizMutation]);
 
@@ -125,8 +264,8 @@ export default function QuizPage() {
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <p className="text-destructive">الاختبار غير موجود</p>
-            <Button 
-              className="mt-4" 
+            <Button
+              className="mt-4"
               onClick={() => setLocation("/student-dashboard")}
               data-testid="button-back-dashboard"
             >
@@ -141,7 +280,7 @@ export default function QuizPage() {
   const quiz = quizData.quiz;
   const questions = Array.isArray(quiz.questions) ? quiz.questions : [];
   const currentQuestion = questions[currentQuestionIndex];
-  
+
   if (!attemptId) {
     return (
       <div className="min-h-screen bg-muted/20 flex items-center justify-center">
@@ -151,7 +290,7 @@ export default function QuizPage() {
             {quiz.description && (
               <p className="text-muted-foreground mb-6">{quiz.description}</p>
             )}
-            
+
             <div className="grid md:grid-cols-3 gap-4 mb-8">
               <div className="bg-muted/30 p-4 rounded-lg">
                 <p className="text-sm text-muted-foreground">عدد الأسئلة</p>
@@ -162,22 +301,26 @@ export default function QuizPage() {
                 <p className="text-2xl font-bold">{quiz.duration} دقيقة</p>
               </div>
               <div className="bg-muted/30 p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground">المحاولات المسموحة</p>
+                <p className="text-sm text-muted-foreground">
+                  المحاولات المسموحة
+                </p>
                 <p className="text-2xl font-bold">{quiz.maxAttempts}</p>
               </div>
             </div>
-            
+
             <div className="space-y-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 onClick={() => startQuizMutation.mutate()}
                 disabled={startQuizMutation.isPending}
                 data-testid="button-start-quiz"
               >
-                {startQuizMutation.isPending ? "جاري البدء..." : "ابدأ الاختبار"}
+                {startQuizMutation.isPending
+                  ? "جاري البدء..."
+                  : "ابدأ الاختبار"}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setLocation("/student-dashboard")}
                 data-testid="button-cancel-quiz"
               >
@@ -193,10 +336,11 @@ export default function QuizPage() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const progressPercentage =
+    ((currentQuestionIndex + 1) / questions.length) * 100;
   const answeredCount = Object.keys(answers).length;
 
   return (
@@ -207,23 +351,29 @@ export default function QuizPage() {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-foreground mb-2">{quiz.title}</h1>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  {quiz.title}
+                </h1>
                 <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <span>
                     <i className="fas fa-question-circle ml-2"></i>
                     {questions.length} سؤال
                   </span>
                   {timeRemaining !== null && (
-                    <span className={timeRemaining < 300 ? "text-destructive font-bold" : ""}>
+                    <span
+                      className={
+                        timeRemaining < 300 ? "text-destructive font-bold" : ""
+                      }
+                    >
                       <i className="fas fa-clock ml-2"></i>
                       {formatTime(timeRemaining)} متبقي
                     </span>
                   )}
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => submitQuizMutation.mutate()}
                   disabled={submitQuizMutation.isPending}
@@ -233,11 +383,13 @@ export default function QuizPage() {
                 </Button>
               </div>
             </div>
-            
+
             {/* Progress Bar */}
             <div>
               <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                <span>السؤال {currentQuestionIndex + 1} من {questions.length}</span>
+                <span>
+                  السؤال {currentQuestionIndex + 1} من {questions.length}
+                </span>
                 <span>{answeredCount} تم الإجابة عليها</span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
@@ -255,7 +407,9 @@ export default function QuizPage() {
                     {currentQuestionIndex + 1}
                   </div>
                   <span className="bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium">
-                    {currentQuestion.type === "multiple-choice" ? "اختيار من متعدد" : "صح/خطأ"}
+                    {currentQuestion.type === "multiple-choice"
+                      ? "اختيار من متعدد"
+                      : "صح/خطأ"}
                   </span>
                 </div>
                 <h2 className="text-xl font-bold text-foreground leading-relaxed">
@@ -267,24 +421,53 @@ export default function QuizPage() {
               <RadioGroup
                 value={answers[`q${currentQuestionIndex}`] || ""}
                 onValueChange={(value) => {
-                  setAnswers(prev => ({
+                  setAnswers((prev) => ({
                     ...prev,
-                    [`q${currentQuestionIndex}`]: value
+                    [`q${currentQuestionIndex}`]: value,
                   }));
                 }}
               >
-                {currentQuestion.options?.map((option: string, index: number) => (
-                  <div key={index} className="flex items-center space-x-reverse space-x-2 p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
-                    <RadioGroupItem 
-                      value={String.fromCharCode(97 + index)} 
-                      id={`option-${index}`}
-                      data-testid={`radio-option-${index}`}
-                    />
-                    <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                      {option}
-                    </Label>
-                  </div>
-                ))}
+                {currentQuestion.type === "true-false"
+                  ? // Handle true/false questions with proper Arabic options
+                    ["صح", "خطأ"].map((option: string, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center space-x-reverse space-x-2 p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                      >
+                        <RadioGroupItem
+                          value={option}
+                          id={`option-${index}`}
+                          data-testid={`radio-option-${index}`}
+                        />
+                        <Label
+                          htmlFor={`option-${index}`}
+                          className="flex-1 cursor-pointer"
+                        >
+                          {option}
+                        </Label>
+                      </div>
+                    ))
+                  : // Handle multiple choice questions
+                    currentQuestion.options?.map(
+                      (option: string, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center space-x-reverse space-x-2 p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                        >
+                          <RadioGroupItem
+                            value={String.fromCharCode(97 + index)}
+                            id={`option-${index}`}
+                            data-testid={`radio-option-${index}`}
+                          />
+                          <Label
+                            htmlFor={`option-${index}`}
+                            className="flex-1 cursor-pointer"
+                          >
+                            {option}
+                          </Label>
+                        </div>
+                      ),
+                    )}
               </RadioGroup>
             </CardContent>
           </Card>
@@ -294,14 +477,16 @@ export default function QuizPage() {
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+            onClick={() =>
+              setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))
+            }
             disabled={currentQuestionIndex === 0}
             data-testid="button-previous-question"
           >
             <i className="fas fa-arrow-right ml-2"></i>
             السؤال السابق
           </Button>
-          
+
           <Button
             onClick={() => {
               if (currentQuestionIndex < questions.length - 1) {
@@ -313,7 +498,9 @@ export default function QuizPage() {
             disabled={submitQuizMutation.isPending}
             data-testid="button-next-question"
           >
-            {currentQuestionIndex === questions.length - 1 ? "إنهاء الاختبار" : "السؤال التالي"}
+            {currentQuestionIndex === questions.length - 1
+              ? "إنهاء الاختبار"
+              : "السؤال التالي"}
             <i className="fas fa-arrow-left mr-2"></i>
           </Button>
         </div>

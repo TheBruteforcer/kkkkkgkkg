@@ -126,9 +126,5 @@ function LoginPageContent() {
 }
 
 export default function LoginPage() {
-  return (
-    <AuthGuard redirectTo="/">
-      <LoginPageContent />
-    </AuthGuard>
-  );
+  return <LoginPageContent />;
 }

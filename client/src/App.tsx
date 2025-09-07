@@ -10,7 +10,6 @@ import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import StudentDashboard from "@/pages/student-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
-import SecureAdminPanel from "@/pages/secure-admin-panel";
 import QuizPage from "@/pages/quiz";
 
 function Router() {
@@ -27,11 +26,6 @@ function Router() {
       <Route path="/admin-dashboard">
         <AuthGuard requireAuth requireAdmin>
           <AdminDashboard />
-        </AuthGuard>
-      </Route>
-      <Route path="/secure-admin-control-panel">
-        <AuthGuard requireAuth requireAdmin>
-          <SecureAdminPanel />
         </AuthGuard>
       </Route>
       <Route path="/quiz/:id">
