@@ -62,8 +62,9 @@ export default function StudentDashboard() {
   // Calculate stats
   const totalMaterials = materials.length;
   const completedQuizzes = attempts.filter(a => a.completedAt).length;
-  const averageScore = attempts.length > 0 
-    ? Math.round(attempts.reduce((sum, a) => sum + (a.score || 0), 0) / attempts.length)
+  const completedAttempts = attempts.filter(a => a.completedAt && a.score !== null);
+  const averageScore = completedAttempts.length > 0 
+    ? Math.round(completedAttempts.reduce((sum, a) => sum + ((a.score || 0) / (a.totalQuestions || 1)) * 100, 0) / completedAttempts.length)
     : 0;
 
   return (
@@ -219,9 +220,9 @@ export default function StudentDashboard() {
 
 function getGradeName(grade: string | null) {
   switch (grade) {
-    case "grade-1": return "الصف الأول الثانوي";
-    case "grade-2": return "الصف الثاني الثانوي";
-    case "grade-3": return "الصف الثالث الثانوي";
+    case "grade-1": return "الصف الأول الإعدادي";
+    case "grade-2": return "الصف الثاني الإعدادي";
+    case "grade-3": return "الصف الثالث الإعدادي";
     default: return "غير محدد";
   }
 }

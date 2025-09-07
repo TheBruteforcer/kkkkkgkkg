@@ -14,10 +14,10 @@ function LandingPageContent() {
       <section className="gradient-bg py-20 lg:py-32">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center animate-fade-in">
           <h1 className="text-4xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
-            منصة <span className="text-accent">GameNightBalancer</span>
+            منصة <span className="text-accent">مستر محمد السيد</span>
           </h1>
           <p className="text-xl text-primary-foreground/90 mb-8 max-w-2xl">
-            سهّل تنظيم وتوزيع الألعاب بين الأصدقاء أو الطلاب مع منصة متكاملة وسهلة الاستخدام.
+            منصة تعليمية متطورة توفر لك أفضل تجربة تعلم تفاعلية مع محتوى عالي الجودة ومتابعة مستمرة لتقدمك الأكاديمي
           </p>
           <Button
             size="lg"
@@ -25,7 +25,7 @@ function LandingPageContent() {
             onClick={() => setLocation("/register")}
             data-testid="button-start-journey"
           >
-            ابدأ الآن
+            ابدأ رحلتك التعليمية
           </Button>
         </div>
       </section>
@@ -33,7 +33,7 @@ function LandingPageContent() {
       {/* How It Works Section */}
       <section className="py-16 bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-10 text-center">كيف تعمل المنصة؟</h2>
+          <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-10 text-center">كيف تستخدم المنصة؟</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {howItWorks.map((step) => (
               <div key={step.id} className="bg-card p-6 rounded-2xl shadow-md flex flex-col items-center animate-slide-up">
@@ -54,7 +54,7 @@ function LandingPageContent() {
           <div className="text-center mb-16 animate-slide-up">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">مميزات المنصة</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              كل ما تحتاجه لتنظيم فعاليات الألعاب أو الدراسة بسهولة وفعالية
+              تجربة تعليمية شاملة مصممة خصيصاً لتلبية احتياجات الطلاب العرب
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -78,8 +78,8 @@ function LandingPageContent() {
       {/* Call to Action */}
       <section className="py-12 bg-accent/10">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-4 text-accent">جاهز لتجربة أفضل تنظيم؟</h2>
-          <p className="mb-6 text-muted-foreground">سجّل الآن وابدأ بتنظيم فعالياتك بسهولة واحترافية.</p>
+          <h2 className="text-2xl font-bold mb-4 text-accent">جاهز لبدء رحلتك التعليمية؟</h2>
+          <p className="mb-6 text-muted-foreground">سجّل الآن وابدأ بالوصول إلى محتوى تعليمي عالي الجودة.</p>
           <Button
             size="lg"
             className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all"
@@ -97,20 +97,20 @@ const howItWorks = [
   {
     id: 1,
     icon: "fas fa-user-plus",
-    title: "سجّل حسابك",
-    description: "ابدأ بإنشاء حساب جديد في ثوانٍ معدودة."
+    title: "إنشاء الحساب",
+    description: "سجّل حسابك واختر مرحلتك الدراسية ومجموعتك."
   },
   {
     id: 2,
-    icon: "fas fa-list-ol",
-    title: "أنشئ فعالية أو مجموعة",
-    description: "أضف تفاصيل الفعالية أو المجموعة وحدد الألعاب أو المهام."
+    icon: "fas fa-book-open",
+    title: "تصفح المحتوى",
+    description: "اطلع على صور السبورة وفيديوهات الحل الخاصة بمرحلتك."
   },
   {
     id: 3,
-    icon: "fas fa-balance-scale",
-    title: "وزّع تلقائياً",
-    description: "دع المنصة توزع الأدوار أو الألعاب تلقائياً بعدالة وسهولة."
+    icon: "fas fa-quiz",
+    title: "حل الاختبارات",
+    description: "اختبر معلوماتك وتابع تقدمك الأكاديمي."
   },
 ];
 
@@ -125,11 +125,11 @@ const features = [
   },
   {
     id: 2,
-    icon: "fas fa-clipboard-check",
+    icon: "fas fa-quiz",
     iconColor: "text-accent",
     bgColor: "bg-accent/10",
-    title: "تنظيم ذكي",
-    description: "نظام توزيع متطور يضمن عدالة وفعالية في توزيع الألعاب أو المهام"
+    title: "اختبارات ذكية",
+    description: "نظام اختبارات متطور مع تصحيح فوري وتقييم شامل للأداء"
   },
   {
     id: 3,
@@ -161,7 +161,7 @@ const features = [
     iconColor: "text-blue-500",
     bgColor: "bg-blue-500/10",
     title: "بحث ذكي",
-    description: "محرك بحث متطور للعثور على المحتوى أو الألعاب بسهولة وسرعة"
+    description: "محرك بحث متطور للعثور على المحتوى التعليمي بسهولة وسرعة"
   }
 ];
 

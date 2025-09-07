@@ -598,10 +598,9 @@ export default function QuizCreationDialog({
                           </Badge>
                           <span className="text-white font-medium">
                             {question.question}
-                          </span>
                           <Badge variant="outline" className="text-slate-300">
                             {question.type === "multiple-choice"
-                              ? "اختيار من متعدد"
+                            correctAnswer: String.fromCharCode(97 + index),
                               : "صح/خطأ"}
                           </Badge>
                         </div>

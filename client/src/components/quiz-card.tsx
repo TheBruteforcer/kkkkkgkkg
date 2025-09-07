@@ -108,7 +108,7 @@ export default function QuizCard({ quiz, attempt, onStartQuiz }: QuizCardProps) 
               {isCompleted && attempt?.score !== null && (
                 <div className="text-sm text-muted-foreground mt-1">
                   الدرجة: <span className="font-bold" data-testid={`text-quiz-score-${quiz.id}`}>
-                    {Math.round((attempt.score / attempt.totalQuestions) * 100)}%
+                    {Math.round(((attempt.score || 0) / (attempt.totalQuestions || 1)) * 100)}%
                   </span>
                 </div>
               )}

@@ -68,7 +68,7 @@ export default function AdminDashboard() {
 
   // Grade mutations
   const createGradeMutation = useMutation({
-    mutationFn: (data: typeof gradeForm) => apiRequest("/api/grades", "POST", data),
+    mutationFn: (data: typeof gradeForm) => apiRequest("POST", "/api/grades", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/grades"] });
       setGradeForm({ name: "", code: "", description: "" });
@@ -80,7 +80,7 @@ export default function AdminDashboard() {
   });
 
   const updateGradeMutation = useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<Grade>) => apiRequest(`/api/grades/${id}`, "PUT", data),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<Grade>) => apiRequest("PUT", `/api/grades/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/grades"] });
       setEditingGrade(null);
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
   });
 
   const deleteGradeMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/grades/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/grades/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/grades"] });
       toast({ title: "تم حذف المرحلة الدراسية بنجاح" });
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   // Group mutations
   const createGroupMutation = useMutation({
-    mutationFn: (data: typeof groupForm) => apiRequest("/api/groups", "POST", data),
+    mutationFn: (data: typeof groupForm) => apiRequest("POST", "/api/groups", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setGroupForm({ name: "", code: "", description: "" });
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
   });
 
   const updateGroupMutation = useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<Group>) => apiRequest(`/api/groups/${id}`, "PUT", data),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<Group>) => apiRequest("PUT", `/api/groups/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setEditingGroup(null);
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
   });
 
   const deleteGroupMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/groups/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/groups/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       toast({ title: "تم حذف المجموعة بنجاح" });
@@ -143,6 +143,17 @@ export default function AdminDashboard() {
   const activeQuizzes = quizzes.filter(q => q.isActive && new Date(q.deadline) > new Date()).length;
   const whiteboardImages = materials.filter(m => m.type === "whiteboard").length;
   const videos = materials.filter(m => m.type === "video").length;
+
+  // Get dynamic stats from API
+  const { data: adminStats } = useQuery<{
+    stats: {
+      totalStudents: number;
+      averageScore: number;
+    };
+  }>({
+    queryKey: ["/api/admin/stats"],
+    enabled: !!currentUser?.user && currentUser.user.role === "admin",
+  });
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -159,10 +170,6 @@ export default function AdminDashboard() {
               مرحباً {currentUser.user.name} - إدارة المحتوى والاختبارات
             </p>
           </div>
-          <Button className="bg-primary hover:bg-primary/90" data-testid="button-add-content">
-            <i className="fas fa-plus ml-2"></i>
-            إضافة محتوى جديد
-          </Button>
         </div>
 
         {/* Admin Stats */}
@@ -173,7 +180,7 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">إجمالي الطلاب</p>
                   <p className="text-2xl font-bold text-foreground" data-testid="text-total-students">
-                    0
+                    {adminStats?.stats.totalStudents || 0}
                   </p>
                 </div>
                 <div className="bg-blue-500/10 p-3 rounded-lg">
@@ -221,7 +228,7 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">متوسط الأداء</p>
                   <p className="text-2xl font-bold text-foreground" data-testid="text-average-performance">
-                    0%
+                    {Math.round(adminStats?.stats.averageScore || 0)}%
                   </p>
                 </div>
                 <div className="bg-purple-500/10 p-3 rounded-lg">

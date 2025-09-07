@@ -59,7 +59,7 @@ function RegisterPageContent() {
             description: "يجب إدخال كود المدير الصحيح لإنشاء حساب إداري",
             variant: "destructive",
           });
-          return;
+        setLocation("/admin-dashboard");
         }
         console.log("Admin code validated successfully");
       }
@@ -196,9 +196,9 @@ function RegisterPageContent() {
                     <SelectValue placeholder="اختر المرحلة الدراسية" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="grade-1">الصف الأول الثانوي</SelectItem>
-                    <SelectItem value="grade-2">الصف الثاني الثانوي</SelectItem>
-                    <SelectItem value="grade-3">الصف الثالث الثانوي</SelectItem>
+                    <SelectItem value="grade-1">الصف الأول الإعدادي</SelectItem>
+                    <SelectItem value="grade-2">الصف الثاني الإعدادي</SelectItem>
+                    <SelectItem value="grade-3">الصف الثالث الإعدادي</SelectItem>
                   </SelectContent>
                   </Select>
                   {form.formState.errors.grade && (
