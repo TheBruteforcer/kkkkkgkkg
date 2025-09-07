@@ -336,10 +336,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/quizzes", requireAdmin, async (req, res) => {
     try {
-      const quizData = insertQuizSchema.parse(req.body);
+      console.log("Received quiz data:", req.body);
+      
+      // Convert deadline string to Date object
+      const requestData = {
+        ...req.body,
+        deadline: new Date(req.body.deadline)
+      };
+      
+      const quizData = insertQuizSchema.parse(requestData);
+      console.log("Validated quiz data:", quizData);
       const quiz = await storage.createQuiz(quizData);
       res.json({ quiz });
     } catch (error) {
+      console.error("Quiz creation error:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       res.status(400).json({ message: "بيانات غير صحيحة" });
     }
   });

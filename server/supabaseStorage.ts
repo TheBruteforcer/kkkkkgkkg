@@ -131,12 +131,30 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createQuiz(insertQuiz: InsertQuiz): Promise<Quiz> {
-    const { data, error } = await supabase
+    // Manually map camelCase to snake_case and convert date for Supabase client
+    const { maxAttempts, isActive, deadline, ...rest } = insertQuiz;
+    const supabaseQuizData: any = {
+      ...rest,
+    };
+
+    if (maxAttempts !== undefined) {
+      supabaseQuizData.max_attempts = maxAttempts;
+    }
+    if (isActive !== undefined) {
+      supabaseQuizData.is_active = isActive;
+    }
+    if (deadline) {
+      supabaseQuizData.deadline = deadline.toISOString();
+    }
+
+    const { data, error } = await supabase // Use the shared client
       .from('quizzes')
-      .insert([insertQuiz])
+      .insert([supabaseQuizData])
       .select()
       .single();
-    if (error || !data) throw new Error(error?.message || 'Failed to create quiz');
+    if (error || !data) {
+      throw new Error(error?.message || 'Failed to create quiz');
+    }
     return data as Quiz;
   }
 

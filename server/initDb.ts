@@ -6,10 +6,17 @@ export async function initializeDatabase() {
     console.log('Initializing database...');
 
     // Create default grades if they don't exist
-    const { data: existingGrades } = await supabase
+    const { data: existingGrades, error: gradesError } = await supabase
       .from('grades')
       .select('*');
 
+    if (gradesError) {
+      console.error('Error fetching grades:', gradesError);
+      throw gradesError;
+    }
+
+    console.log(`Found ${existingGrades?.length || 0} existing grades`);
+    
     if (!existingGrades || existingGrades.length === 0) {
       const defaultGrades = [
         { name: 'الصف الأول الإعدادي', code: 'grade-1', description: 'الصف الأول الإعدادي' },
@@ -18,15 +25,26 @@ export async function initializeDatabase() {
       ];
 
       for (const grade of defaultGrades) {
-        await supabase.from('grades').insert(grade);
+        const { error } = await supabase.from('grades').insert(grade);
+        if (error) {
+          console.error(`Error creating grade ${grade.name}:`, error);
+          throw error;
+        }
         console.log(`Created grade: ${grade.name}`);
       }
     }
 
     // Create default groups if they don't exist
-    const { data: existingGroups } = await supabase
+    const { data: existingGroups, error: groupsError } = await supabase
       .from('groups')
       .select('*');
+
+    if (groupsError) {
+      console.error('Error fetching groups:', groupsError);
+      throw groupsError;
+    }
+
+    console.log(`Found ${existingGroups?.length || 0} existing groups`);
 
     if (!existingGroups || existingGroups.length === 0) {
       const defaultGroups = [
@@ -36,26 +54,45 @@ export async function initializeDatabase() {
       ];
 
       for (const group of defaultGroups) {
-        await supabase.from('groups').insert(group);
+        const { error } = await supabase.from('groups').insert(group);
+        if (error) {
+          console.error(`Error creating group ${group.name}:`, error);
+          throw error;
+        }
         console.log(`Created group: ${group.name}`);
       }
     }
 
     // Create default admin user if it doesn't exist
-    const { data: existingAdmin } = await supabase
+    const { data: existingAdmin, error: adminError } = await supabase
       .from('users')
       .select('*')
       .eq('email', 'admin@example.com')
       .single();
 
+    if (adminError && adminError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      console.error('Error fetching admin user:', adminError);
+      throw adminError;
+    }
+
+    console.log(`Admin user exists: ${!!existingAdmin}`);
+
     if (!existingAdmin) {
-      await supabase.from('users').insert({
+      const { error } = await supabase.from('users').insert({
         name: 'مدير النظام',
         email: 'admin@example.com',
         password: 'admin123',
         role: 'admin'
       });
+      
+      if (error) {
+        console.error('Error creating admin user:', error);
+        throw error;
+      }
+      
       console.log('Created default admin user: admin@example.com / admin123');
+    } else {
+      console.log('Admin user already exists');
     }
 
     console.log('Database initialization completed successfully!');
@@ -65,7 +102,5 @@ export async function initializeDatabase() {
   }
 }
 
-// Run initialization if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  initializeDatabase().catch(console.error);
-}
+// Run initialization
+initializeDatabase().catch(console.error);
